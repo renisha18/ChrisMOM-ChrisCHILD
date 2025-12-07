@@ -1,0 +1,32 @@
+{
+  "name": "chrismom-chrischild",
+  "version": "1.0.0",
+  "description": "Chrismom and chris child game with family",
+  "homepage": "https://github.com/renisha18/ChrisMOM-ChrisCHILD#readme",
+  "bugs": {
+    "url": "https://github.com/renisha18/ChrisMOM-ChrisCHILD/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/renisha18/ChrisMOM-ChrisCHILD.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.2",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.3.1",
+    "ejs": "^3.1.10",
+    "express": "^4.22.1",
+    "express-session": "^1.17.3",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0",
+    "pg": "^8.11.3"
+  }
+}

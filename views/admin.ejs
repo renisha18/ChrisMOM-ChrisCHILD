@@ -1,0 +1,16 @@
+<%- include('/Users/renishaensalaita/Desktop/ChrisMOM-ChrisCHILD/partials/header.ejs') %>
+<div>
+<h1>Admin Panel</h1>
+
+<form action="/generate" method="POST">
+  <button type="submit">Generate ChrisChild</button>
+</form>
+
+<h2>All Users:</h2>
+<ul>
+  <% users.forEach(u => { %>
+    <li><%= u.email %></li>
+  <% }) %>
+</ul></div>
+
+<%- include('/Users/renishaensalaita/Desktop/ChrisMOM-ChrisCHILD/partials/footer.ejs') %>
