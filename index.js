@@ -15,6 +15,10 @@ env.config();
 const ENCRYPT_KEY = process.env.ENCRYPT_KEY; // must be 32 bytes hex string (64 hex chars)
 const IV_LENGTH = 16;
 
+const ALLOWED_USERS = [
+  "Mary","Chris","David","Evan","Vasanthi","Hepzhi","Robin","Jenny","Vino","Gladys","Jess","Jeno","Joe","Jeff","Renisha"
+]
+
 if (!ENCRYPT_KEY || ENCRYPT_KEY.length !== 64) {
   console.error(
     "ENCRYPT_KEY missing or invalid. Generate a 32-byte hex key and set ENCRYPT_KEY in .env"
@@ -50,13 +54,11 @@ function decrypt(enc) {
   decrypted += decipher.final("utf8");
   return decrypted;
 }
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: true,
-  })
-);
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false
+}));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
@@ -112,47 +114,7 @@ app.get("/admin", isAdmin, async (req, res) => {
   }
 });
 
-app.post("/generate", async (req, res) => {
-  try {
-    const usersRes = await db.query("SELECT email FROM users");
-    let users = usersRes.rows.map((u) => u.email);
 
-    if (users.length === 0) {
-      return res.status(400).send("No users to assign.");
-    }
-
-    // Shuffle users
-    let shuffled = [...users];
-    shuffled.sort(() => Math.random() - 0.5);
-
-    // Avoid self-assignment: reshuffle until no one has themselves (simple approach)
-    let attempts = 0;
-    while (users.some((u, i) => u === shuffled[i]) && attempts < 1000) {
-      shuffled.sort(() => Math.random() - 0.5);
-      attempts++;
-    }
-    if (users.some((u, i) => u === shuffled[i])) {
-      return res
-        .status(500)
-        .send("Could not generate valid assignments without self-matching.");
-    }
-
-    // Save encrypted assignments in DB (assigned_child column expected)
-    for (let i = 0; i < users.length; i++) {
-      const plainAssigned = shuffled[i];
-      const enc = encrypt(plainAssigned);
-      await db.query(
-        "UPDATE users SET assigned_child= $1 WHERE email = $2",
-        [enc, users[i]]
-      );
-    }
-
-    res.send("Generated successfully!");
-  } catch (err) {
-    console.error("Generate error:", err);
-    res.status(500).send("Server error while generating");
-  }
-});
 
 app.get("/logout", (req, res) => {
   req.logout(function (err) {
@@ -195,6 +157,9 @@ app.post(
 
 app.post("/register", async (req, res) => {
   const email = req.body.username;
+  if (!ALLOWED_USERS.includes(email)) {
+  return res.status(403).send("You are not in the approved Secret Santa list.");
+}
   const password = req.body.password;
 
   try {
@@ -209,10 +174,44 @@ app.post("/register", async (req, res) => {
         if (err) {
           console.error("Error hashing password:", err);
         } else {
-          const result = await db.query(
-            "INSERT INTO users (email, password) VALUES ($1, $2) RETURNING *",
-            [email, hash]
-          );
+
+function getRandomChild(currentUser, allowedList) {
+  const available = allowedList.filter(u => u !== currentUser);
+  const randomIndex = Math.floor(Math.random() * available.length);
+  return available[randomIndex];
+}
+
+// Fetch already assigned children to try to avoid duplicates (optional)
+const existingRows = await db.query("SELECT assigned_child FROM users");
+const existingAssigned = existingRows.rows
+  .map(r => r.assigned_child)
+  .filter(Boolean) // may be null for some rows
+  .map(enc => {
+    try { return decrypt(enc); } catch (e) { return null; }
+  })
+  .filter(Boolean);
+
+// 1) generate an assignedChild random (not self)
+let assignedChild = getRandomChild(email, ALLOWED_USERS);
+
+// 2) optional: avoid assigning someone already assigned (retry a few times)
+let attempts = 0;
+while (existingAssigned.includes(assignedChild) && attempts < 50) {
+  assignedChild = getRandomChild(email, ALLOWED_USERS);
+  attempts++;
+}
+
+// 3) encrypt the assigned child
+const encrypted = encrypt(assignedChild);
+
+// 4) insert the user with assigned_child in one query
+const result = await db.query(
+  "INSERT INTO users (email, password, assigned_child) VALUES ($1, $2, $3) RETURNING *",
+  [email, hash, encrypted]
+);
+
+
+
           const user = result.rows[0];
           req.login(user, (err) => {
             console.log("success");
