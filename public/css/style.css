@@ -17,3 +17,24 @@ body {
 .h1{
   font-weight: 900;
 }
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+  .centered {
+    padding-top: 120px;   /* reduce gap */
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .secret-text {
+    font-size: 1.4rem;    /* slightly smaller */
+    padding: 10px;
+  }
+
+  h1, .h1 {
+    font-size: 1.8rem;    /* shrink heading on phone */
+  }
+
+  body {
+    background-color: #E8ECEF; /* keep same */
+  }
+}
