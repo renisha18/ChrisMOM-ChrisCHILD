@@ -1,45 +1,40 @@
-/* iPhone / very small screens */
-@media (max-width: 400px) {
-  .centered {
-    padding-top: 100px;   /* reduce vertical spacing */
-    padding-left: 10px;
-    padding-right: 10px;
-  }
 
-  .secret-text {
-    font-size: 1.2rem;    /* shrink text */
-    padding: 8px;
-  }
-
-  h1, .h1 {
-    font-size: 1.6rem;    /* shrink heading */
-  }
-
-  .jumbotron .btn-lg {
-    width: 100%;           /* buttons stack */
-    margin-bottom: 8px;
-  }
+body {
+  background-color: #E8ECEF;
 }
 
-/* Small Android / slightly bigger phones */
-@media (max-width: 480px) and (min-width: 401px) {
+.centered {
+    padding-top: 200px;
+    text-align: center;
+}
+
+.secret-text {
+  text-align: center;
+  font-size: 2rem;
+  color: #fff;
+  background-color: #000;
+}
+.h1{
+  font-weight: 900;
+}
+/* Mobile responsiveness */
+@media (max-width: 400px) {
   .centered {
-    padding-top: 120px;
+    padding-top: 120px;   /* reduce gap */
     padding-left: 10px;
     padding-right: 10px;
   }
 
   .secret-text {
-    font-size: 1.4rem;
+    font-size: 1.4rem;    /* slightly smaller */
     padding: 10px;
   }
 
   h1, .h1 {
-    font-size: 1.8rem;
+    font-size: 1.8rem;    /* shrink heading on phone */
   }
 
-  .jumbotron .btn-lg {
-    width: 100%;
-    margin-bottom: 10px;
+  body {
+    background-color: #E8ECEF; /* keep same */
   }
 }
