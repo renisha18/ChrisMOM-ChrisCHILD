@@ -90,20 +90,29 @@ export default function Group() {
   }
 
   return (
-    <Page title={group.name} back="/dashboard" wide>
-      {group.description && <p>{group.description}</p>}
-
-      <button
-        type="button"
-        disabled={!group.drawn}
-        onClick={() => chitsRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })}
-      >
-        Find your Chris-Child
-      </button>
-      <p className="muted">{group.drawn ? "Names have been drawn." : "Available once the admin draws names."}</p>
-
+    <Page title={group.name} back="/dashboard">
       <div className="group-layout">
         <div className="group-main">
+          {group.description && (
+            <div className="envelope">
+              <div className="note">
+                <svg className="clip" width="22" height="46" viewBox="0 0 22 46" aria-hidden="true">
+                  <path d="M7 40V10a4 4 0 0 1 8 0v26a7 7 0 0 1-14 0V12" fill="none" stroke="#C9A35B" strokeWidth="2.5" strokeLinecap="round" transform="translate(3 0)" />
+                </svg>
+                <p>{group.description}</p>
+              </div>
+            </div>
+          )}
+
+          <button
+            type="button"
+            disabled={!group.drawn}
+            onClick={() => chitsRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })}
+          >
+            Find your Chris-Child
+          </button>
+          <p className="muted">{group.drawn ? "Names have been drawn." : "Available once the admin draws names."}</p>
+
           <section className="panel" ref={chitsRef}>
             <h2>Chits</h2>
             {!group.drawn && <p className="muted">Chits appear once the admin draws names.</p>}
@@ -114,6 +123,7 @@ export default function Group() {
                 animate={{ rotateY: 0, opacity: 1 }}
                 transition={{ duration: 0.4 }}
               >
+                <span className="hole" aria-hidden="true" />
                 <p className="muted">Your Chris-Child is</p>
                 <p className="chit-name">{openedName ?? data.childName}</p>
                 <p className="muted">Keep it secret!</p>
@@ -132,7 +142,9 @@ export default function Group() {
                       disabled={opening}
                       aria-label="Open a chit"
                     >
-                      ?
+                      <span className="twine-v" aria-hidden="true" />
+                      <span className="twine-h" aria-hidden="true" />
+                      <span className="bow" aria-hidden="true">&#10086;</span>
                     </button>
                   ))}
                 </div>
@@ -140,14 +152,33 @@ export default function Group() {
             )}
             {chitError && <p className="error" role="alert">{chitError}</p>}
           </section>
+        </div>
 
+        <aside className="group-side">
+          <button type="button" className="secondary" onClick={() => setShowMembers((s) => !s)}>
+            {showMembers ? "Hide members" : `Show members (${members.length})`}
+          </button>
+          {showMembers && (
+            <section className="panel">
+              <h2>Members ({members.length})</h2>
+              <ul className="member-pills">
+                {members.map((m) => (
+                  <li key={m.id} className={m.joined ? "mpill joined" : "mpill"}>
+                    <span className="bow-icon" aria-hidden="true">&#10086;</span>
+                    <span className="mname">{m.displayName}{m.isMe ? " (you)" : ""}</span>
+                    <span className="mstatus">{m.joined ? "joined" : "not joined"}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
           {group.isAdmin && (
             <section className="panel">
               <h2>Invite</h2>
               <input readOnly value={inviteLink} onFocus={(e) => e.target.select()} aria-label="Invite link" />
               <div className="row left">
-                <button type="button" className="secondary" onClick={copyLink}>{copied ? "Copied!" : "Copy link"}</button>
-                <a className="btn" href={waHref} target="_blank" rel="noreferrer">Share on WhatsApp</a>
+                <button type="button" className="outline" onClick={copyLink}>{copied ? "Copied!" : "Copy link"}</button>
+                <a className="btn red" href={waHref} target="_blank" rel="noreferrer">Share on WhatsApp</a>
               </div>
             </section>
           )}
@@ -166,25 +197,6 @@ export default function Group() {
                 </>
               )}
               {actionError && <p className="error" role="alert">{actionError}</p>}
-            </section>
-          )}
-        </div>
-
-        <aside className="group-side">
-          <button type="button" className="secondary" onClick={() => setShowMembers((s) => !s)}>
-            {showMembers ? "Hide members" : `Show members (${members.length})`}
-          </button>
-          {showMembers && (
-            <section className="panel">
-              <h2>Members ({members.length})</h2>
-              <ul className="list">
-                {members.map((m) => (
-                  <li key={m.id}>
-                    {m.displayName}{m.isMe ? " (you)" : ""}
-                    <span className="muted"> · {m.joined ? "joined" : "not joined"}</span>
-                  </li>
-                ))}
-              </ul>
             </section>
           )}
         </aside>

@@ -8,11 +8,11 @@ export default function Register() {
   const navigate = useNavigate();
   const from = useLocation().state?.from || "/dashboard";
 
-  if (loading) return <Page title="Create account" back="/"><p>Loading...</p></Page>;
+  if (loading) return <Page narrow title="Create account" back="/"><p>Loading...</p></Page>;
   if (user) return <Navigate to={from} replace />;
 
   return (
-    <Page title="Create account" back="/">
+    <Page narrow title="Create account" back="/">
       <AuthForm
         submitLabel="Register"
         onSubmit={async (u, p) => {

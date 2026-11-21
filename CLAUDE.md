@@ -31,7 +31,7 @@ Reveal: pick any chit -> opens to your assigned name, set revealed_at. If reveal
 ## Design (Christmas, from Taplink inspo)
 - Colors: cream #FBF4E6, paper #F3E7D3, kraft #D9C7A7, red #A3161E, red-dark #7E0F15, green #1E4A2E, green-dark #163824, gold #C9A35B, ink #3A2A1E. Define as CSS variables in index.css.
 - Fonts (Google): headings "Cormorant SC" 700 uppercase, red; script accents "Pinyon Script"; body "Montserrat".
-- Layout: body = red/white gingham (CSS repeating-linear-gradient); content in a centered cream column max-width 480px, mobile-first, with faint snowflake/star sprinkle.
+- Layout: full-width cream background (no gingham) with faint snowflake/star sprinkle. Content container max-width 1200px, centered, 32px padding (16px on mobile). Responsive: desktop uses multi-column grids, mobile (<768px) stacks to one column.max-width 480px, mobile-first, with faint snowflake/star sprinkle.
 - Buttons: pill shape. Primary green-dark with cream text; secondary red; outline variant.
 - Motifs (CSS/inline SVG only, no copied images): hanging baubles, ticket stubs with notched/zigzag edges, kraft gift tags with twine, paper note with paperclip on red envelope, small bows.
 - Green sections use a faint line-pattern of bows.

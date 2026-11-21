@@ -73,7 +73,7 @@ export default function Join() {
 
   if (!data) {
     return (
-      <Page title="Join group" back={back}>
+      <Page narrow title="Join group" back={back}>
         {error ? <p className="error" role="alert">{error}</p> : <p>Loading...</p>}
       </Page>
     );
@@ -82,7 +82,7 @@ export default function Join() {
   const { group, names, alreadyMember } = data;
 
   return (
-    <Page title={`Join ${group.name}`} back={back}>
+    <Page narrow title={`Join ${group.name}`} back={back}>
       {group.description && <p>{group.description}</p>}
 
       {alreadyMember ? (

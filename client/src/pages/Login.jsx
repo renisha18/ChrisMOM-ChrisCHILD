@@ -8,11 +8,11 @@ export default function Login() {
   const navigate = useNavigate();
   const from = useLocation().state?.from || "/dashboard";
 
-  if (loading) return <Page title="Log in" back="/"><p>Loading...</p></Page>;
+  if (loading) return <Page narrow title="Log in" back="/"><p>Loading...</p></Page>;
   if (user) return <Navigate to={from} replace />;
 
   return (
-    <Page title="Log in" back="/">
+    <Page narrow title="Log in" back="/">
       <AuthForm
         submitLabel="Log in"
         onSubmit={async (u, p) => {

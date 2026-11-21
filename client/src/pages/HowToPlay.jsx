@@ -10,7 +10,7 @@ const RULES = [
 
 export default function HowToPlay() {
   return (
-    <Page title="How to Play" back="/">
+    <Page narrow title="How to Play" back="/">
       <section className="green-section">
         <h2 className="script">The Rules</h2>
         {RULES.map((rule, i) => (

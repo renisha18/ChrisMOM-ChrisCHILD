@@ -2,12 +2,12 @@ import { motion, useReducedMotion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 // Page wrapper: fade-in, optional Back pill to the logical parent route.
-export default function Page({ title, back, wide, children }) {
+export default function Page({ title, back, narrow, hero, children }) {
   const navigate = useNavigate();
   const reduce = useReducedMotion();
   return (
     <motion.main
-      className={wide ? "page wide" : "page"}
+      className={["page", narrow && "narrow", hero && "hero"].filter(Boolean).join(" ")}
       initial={reduce ? false : { opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}

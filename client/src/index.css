@@ -21,10 +21,7 @@ body {
   font-family: var(--font-body);
   color: var(--ink);
   line-height: 1.55;
-  background-color: #fff;
-  background-image:
-    repeating-linear-gradient(0deg, rgba(163, 22, 30, 0.55) 0 28px, transparent 28px 56px),
-    repeating-linear-gradient(90deg, rgba(163, 22, 30, 0.55) 0 28px, transparent 28px 56px);
+  background-color: var(--cream);
 }
 
 h1, h2, h3 {
@@ -39,22 +36,28 @@ h1 { font-size: 2.2rem; margin: 0 0 12px; }
 h2 { font-size: 1.5rem; }
 .script { font-family: var(--font-script); font-weight: 400; text-transform: none; letter-spacing: 0; }
 
-/* Centered cream column with snowflake/star sprinkle */
+/* Full-width cream page with snowflake/star sprinkle */
 .page {
   position: relative;
-  max-width: 480px;
+  width: 100%;
   min-height: 100vh;
   margin: 0 auto;
-  padding: 24px 20px 40px;
+  padding: 32px max(32px, calc((100% - 1200px) / 2 + 32px)) 48px;
   background-color: var(--cream);
   background-image:
     radial-gradient(circle, rgba(201, 163, 91, 0.35) 1.5px, transparent 2px),
     radial-gradient(circle, rgba(163, 22, 30, 0.12) 1px, transparent 1.5px);
   background-size: 64px 64px, 40px 40px;
   background-position: 0 0, 20px 28px;
-  box-shadow: 0 0 0 3px var(--gold), 0 0 30px rgba(0, 0, 0, 0.25);
 }
-.page.wide { max-width: 960px; }
+@media (max-width: 767px) { .page { padding: 20px 16px 40px; } }
+/* Narrow: centered 480px column (forms, how-to) */
+.page.narrow > * { max-width: 480px; margin-left: auto; margin-right: auto; }
+.page.narrow > h1 { text-align: center; }
+.page.narrow > .back { margin-left: max(0px, calc((100% - 480px) / 2)); margin-right: 0; }
+/* Hero: fills viewport, centered */
+.page.hero { display: flex; align-items: center; justify-content: center; }
+.page.hero > .center { padding-top: 0; width: 100%; }
 .center { text-align: center; padding-top: 24px; }
 .row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
 .row.left { justify-content: flex-start; margin: 12px 0; }
@@ -124,14 +127,11 @@ fieldset { border: 1.5px dashed var(--kraft); border-radius: 14px; padding: 12px
 }
 .panel input { width: 100%; }
 
-.group-layout { display: flex; gap: 16px; align-items: flex-start; margin-top: 12px; }
-.group-main { flex: 1; min-width: 0; }
-.group-side { width: 260px; }
-.chits { display: flex; flex-wrap: wrap; gap: 8px; }
-.chit { width: 56px; height: 72px; font-size: 1.4rem; border-radius: 10px; padding: 0; }
-.chit.opened { width: auto; height: auto; padding: 16px; text-align: center; background: var(--paper); border: 2px dashed var(--red); color: var(--ink); }
-.chit-name { font-size: 1.8rem; font-weight: 700; margin: 4px 0; font-family: var(--font-head); color: var(--red); }
-@media (max-width: 700px) { .group-layout { flex-direction: column-reverse; } .group-side { width: 100%; } }
+.group-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 24px; align-items: start; margin-top: 12px; }
+.group-main { min-width: 0; }
+.group-side { position: sticky; top: 16px; display: flex; flex-direction: column; gap: 0; }
+.chits { display: flex; flex-wrap: wrap; gap: 12px; }
+@media (max-width: 767px) { .group-layout { grid-template-columns: 1fr; } .group-side { position: static; } }
 
 /* Landing */
 .baubles { display: flex; justify-content: center; gap: 22px; height: 120px; margin-bottom: 4px; }
@@ -144,7 +144,7 @@ fieldset { border: 1.5px dashed var(--kraft); border-radius: 14px; padding: 12px
 .tagline { font-family: var(--font-script); font-size: 2rem; color: var(--green); margin: 0 0 4px; }
 .title-big { font-size: 3.4rem; margin: 0 0 14px; }
 .title-big span { display: block; font-size: 1.6rem; color: var(--gold); }
-.lede { margin: 0 auto 24px; max-width: 320px; }
+.lede { margin: 0 auto 24px; max-width: 420px; }
 .stack { display: flex; flex-direction: column; gap: 12px; align-items: center; }
 .stack .btn { min-width: 220px; }
 
@@ -198,7 +198,9 @@ fieldset { border: 1.5px dashed var(--kraft); border-radius: 14px; padding: 12px
 .page a:not(.btn):not(.ticket) { color: var(--red); font-weight: 600; }
 
 /* Dashboard ticket stubs */
-.tickets { display: flex; flex-direction: column; gap: 14px; margin-bottom: 8px; }
+.tickets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 8px; }
+@media (max-width: 1023px) { .tickets { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 639px) { .tickets { grid-template-columns: 1fr; } }
 .ticket {
   display: flex;
   align-items: stretch;
@@ -262,3 +264,65 @@ fieldset { border: 1.5px dashed var(--kraft); border-radius: 14px; padding: 12px
   font-size: 1.1rem; border-radius: 50%;
   background: var(--red); border-color: var(--red); color: var(--cream);
 }
+
+/* Group: note on red envelope */
+.envelope {
+  position: relative; margin: 6px 0 18px; padding: 26px 14px 14px;
+  background: var(--red); border-radius: 8px;
+  box-shadow: 0 3px 0 var(--red-dark);
+}
+.envelope::before {
+  content: ""; position: absolute; inset: 0 0 auto 0; height: 46px;
+  background: var(--red-dark);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  border-radius: 8px 8px 0 0; opacity: 0.55;
+}
+.note {
+  position: relative; padding: 18px 18px 14px; background: var(--paper);
+  border-radius: 4px; transform: rotate(-1deg);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+  background-image: repeating-linear-gradient(transparent 0 25px, rgba(163,22,30,0.15) 25px 26px);
+}
+.note p { margin: 0; line-height: 26px; }
+.note .clip { position: absolute; top: -18px; right: 22px; }
+
+/* Members as red pills */
+.member-pills { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.mpill {
+  display: flex; align-items: center; gap: 8px; padding: 7px 14px;
+  background: var(--red); color: var(--cream); border-radius: 999px; font-size: 0.9rem;
+}
+.mpill:not(.joined) { background: var(--red-dark); opacity: 0.75; }
+.bow-icon { color: var(--gold); font-size: 1.1rem; line-height: 1; }
+.mname { flex: 1; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+.mstatus { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.9; }
+.group-side > button { width: 100%; }
+
+/* Folded kraft chits with twine */
+.chit {
+  position: relative; width: 64px; height: 80px; padding: 0; overflow: hidden;
+  background: var(--kraft); border: 1.5px solid #bfa97f; border-radius: 4px;
+  background-image: linear-gradient(135deg, rgba(255,255,255,0.28) 0 50%, rgba(0,0,0,0.07) 50% 100%);
+  box-shadow: 0 2px 0 #bfa97f;
+}
+.chit:hover:not(:disabled) { transform: rotate(-3deg) translateY(-2px); }
+.chit .twine-v, .chit .twine-h { position: absolute; background: var(--red); opacity: 0.9; }
+.chit .twine-v { left: 50%; top: 0; bottom: 0; width: 2px; margin-left: -1px; }
+.chit .twine-h { top: 50%; left: 0; right: 0; height: 2px; margin-top: -1px; }
+.chit .bow { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 1.5rem; color: var(--red); line-height: 1; text-shadow: 0 0 0 var(--cream); }
+
+/* Opened chit: gift tag */
+.chit.opened {
+  width: auto; height: auto; overflow: visible; position: relative;
+  padding: 30px 20px 18px; text-align: center; color: var(--ink);
+  background: var(--kraft); background-image: none;
+  border: none; border-radius: 4px; box-shadow: 0 3px 0 #bfa97f;
+  clip-path: polygon(14% 0, 86% 0, 100% 16%, 100% 100%, 0 100%, 0 16%);
+}
+.chit.opened .hole {
+  position: absolute; top: 12px; left: 50%; width: 14px; height: 14px; margin-left: -7px;
+  border-radius: 50%; background: var(--cream); box-shadow: inset 0 0 0 3px var(--gold);
+}
+.chit-name { font-family: var(--font-script); font-size: 2.8rem; font-weight: 400; margin: 4px 0; color: var(--red); line-height: 1.1; overflow-wrap: anywhere; }
+
+@media (prefers-reduced-motion: reduce) { .chit:hover:not(:disabled) { transform: none; } }

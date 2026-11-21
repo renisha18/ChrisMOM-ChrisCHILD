@@ -17,7 +17,7 @@ function Bauble({ color, dark, len, size }) {
 
 export default function Landing() {
   return (
-    <Page>
+    <Page hero>
       <div className="center">
         <div className="baubles">
           <Bauble color="#A3161E" dark="#7E0F15" len={28} size={44} />

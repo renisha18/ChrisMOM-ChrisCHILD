@@ -38,7 +38,7 @@ export default function NewGroup() {
   }
 
   return (
-    <Page title="Create group" back="/dashboard">
+    <Page narrow title="Create group" back="/dashboard">
       <form onSubmit={handleSubmit} className="form">
         <label>
           Group name
