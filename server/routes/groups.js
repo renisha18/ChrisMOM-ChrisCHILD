@@ -1,6 +1,7 @@
 import { Router } from "express";
 import crypto from "crypto";
 import db from "../db.js";
+import { encrypt } from "../lib/crypto.js";
 
 const router = Router();
 
@@ -132,6 +133,54 @@ router.get("/groups/:id", async (req, res) => {
   } catch (err) {
     console.error("Get group error:", err);
     res.status(500).json({ error: "Could not load the group." });
+  }
+});
+
+// Draw (admin only): one cycle over shuffled members, so nobody gets themselves
+// and everyone has exactly one Chris-Mom. Members are locked after this.
+router.post("/groups/:id/draw", async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) return res.status(404).json({ error: "Group not found." });
+  let client;
+  try {
+    client = await db.connect();
+    await client.query("BEGIN");
+    // Row lock so two simultaneous draws can't both pass the drawn_at check.
+    const { rows } = await client.query("SELECT admin_id, drawn_at FROM groups WHERE id = $1 FOR UPDATE", [id]);
+    const group = rows[0];
+    if (!group || group.admin_id !== req.user.id) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({ error: "Group not found." });
+    }
+    if (group.drawn_at) {
+      await client.query("ROLLBACK");
+      return res.status(409).json({ error: "Names have already been drawn." });
+    }
+    const { rows: members } = await client.query("SELECT id FROM group_members WHERE group_id = $1", [id]);
+    if (members.length < 3) {
+      await client.query("ROLLBACK");
+      return res.status(400).json({ error: "You need at least 3 members to draw." });
+    }
+    for (let i = members.length - 1; i > 0; i--) {
+      const j = crypto.randomInt(i + 1);
+      [members[i], members[j]] = [members[j], members[i]];
+    }
+    for (let i = 0; i < members.length; i++) {
+      const child = members[(i + 1) % members.length];
+      await client.query("UPDATE group_members SET assigned_child = $1 WHERE id = $2", [
+        encrypt(child.id),
+        members[i].id,
+      ]);
+    }
+    await client.query("UPDATE groups SET drawn_at = now() WHERE id = $1", [id]);
+    await client.query("COMMIT");
+    res.json({ ok: true });
+  } catch (err) {
+    if (client) await client.query("ROLLBACK").catch(() => {});
+    console.error("Draw error:", err);
+    res.status(500).json({ error: "Could not draw names. Please try again." });
+  } finally {
+    if (client) client.release();
   }
 });
 

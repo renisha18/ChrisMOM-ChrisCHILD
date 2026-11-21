@@ -59,7 +59,7 @@ router.post("/register", async (req, res) => {
       }
       throw err;
     }
-    req.login(rows[0], (err) => {
+    req.login(rows[0], { keepSessionInfo: true }, (err) => {
       if (err) {
         console.error("Login after register failed:", err);
         return res.status(500).json({ error: "Account created, but login failed. Please log in." });
@@ -79,7 +79,7 @@ router.post("/login", (req, res) => {
       return res.status(500).json({ error: "Something went wrong. Please try again." });
     }
     if (!user) return res.status(401).json({ error: "Wrong username or password." });
-    req.login(user, (loginErr) => {
+    req.login(user, { keepSessionInfo: true }, (loginErr) => {
       if (loginErr) {
         console.error("Login error:", loginErr);
         return res.status(500).json({ error: "Something went wrong. Please try again." });

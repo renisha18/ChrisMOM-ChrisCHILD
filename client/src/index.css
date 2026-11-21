@@ -36,3 +36,4 @@ fieldset { border: 1px solid #ddd; border-radius: 6px; padding: 12px; }
 .muted { color: #777; font-size: 0.9rem; }
 .panel { border: 1px solid #ddd; border-radius: 8px; padding: 12px 16px; margin: 16px 0; background: #fff; }
 .panel input { width: 100%; }
+select { padding: 8px; font-size: 1rem; border: 1px solid #bbb; border-radius: 6px; }

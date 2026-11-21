@@ -7,6 +7,7 @@ import Register from "./pages/Register.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import NewGroup from "./pages/NewGroup.jsx";
 import Group from "./pages/Group.jsx";
+import Join from "./pages/Join.jsx";
 
 function Protected({ children }) {
   const { user, loading } = useAuth();

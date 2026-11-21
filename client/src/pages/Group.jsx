@@ -10,13 +10,36 @@ export default function Group() {
   const [showMembers, setShowMembers] = useState(true);
   const [copied, setCopied] = useState(false);
 
+  const [actionError, setActionError] = useState("");
+  const [drawing, setDrawing] = useState(false);
+  const [chitNote, setChitNote] = useState(false);
+
+  function load() {
+    return api(`/groups/${id}`)
+      .then(setData)
+      .catch((err) => setError(err.message));
+  }
+
   useEffect(() => {
     setData(null);
     setError("");
-    api(`/groups/${id}`)
-      .then(setData)
-      .catch((err) => setError(err.message));
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  async function handleDraw() {
+    if (!window.confirm("Send Chris-Child to everyone? This can't be undone, and members will be locked.")) return;
+    setDrawing(true);
+    setActionError("");
+    try {
+      await api(`/groups/${id}/draw`, { method: "POST" });
+      await load();
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setDrawing(false);
+    }
+  }
 
   if (error) {
     return (
@@ -47,8 +70,11 @@ export default function Group() {
     <Page title={group.name} back="/dashboard">
       {group.description && <p>{group.description}</p>}
 
-      <button type="button" disabled>Find your Chris-Child</button>
+      <button type="button" disabled={!group.drawn} onClick={() => setChitNote(true)}>
+        Find your Chris-Child
+      </button>
       <p className="muted">{group.drawn ? "Names have been drawn." : "Available once the admin draws names."}</p>
+      {chitNote && <p className="muted">Chits are coming in the next update.</p>}
 
       <button type="button" className="secondary" onClick={() => setShowMembers((s) => !s)}>
         {showMembers ? "Hide members" : `Show members (${members.length})`}
@@ -75,6 +101,23 @@ export default function Group() {
             <button type="button" className="secondary" onClick={copyLink}>{copied ? "Copied!" : "Copy link"}</button>
             <a className="btn" href={waHref} target="_blank" rel="noreferrer">Share on WhatsApp</a>
           </div>
+        </section>
+      )}
+
+      {group.isAdmin && (
+        <section className="panel">
+          <h2>Send Chris-Child</h2>
+          {group.drawn ? (
+            <p>Already drawn. Members are locked.</p>
+          ) : (
+            <>
+              <button type="button" onClick={handleDraw} disabled={drawing || members.length < 3}>
+                {drawing ? "Sending..." : "Send Chris-Child"}
+              </button>
+              {members.length < 3 && <p className="muted">You need at least 3 members.</p>}
+            </>
+          )}
+          {actionError && <p className="error" role="alert">{actionError}</p>}
         </section>
       )}
     </Page>
