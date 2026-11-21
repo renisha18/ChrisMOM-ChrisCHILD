@@ -13,20 +13,29 @@
   "license": "ISC",
   "author": "",
   "type": "module",
-  "main": "index.js",
+  "main": "server/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "NODE_ENV=production node server/index.js",
+    "dev": "concurrently -n server,client \"node --watch server/index.js\" \"vite client\"",
+    "build": "vite build client"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
-    "body-parser": "^1.20.2",
-    "crypto": "^1.0.1",
+    "connect-pg-simple": "^10.0.0",
     "dotenv": "^16.3.1",
-    "ejs": "^3.1.10",
     "express": "^4.22.1",
     "express-session": "^1.17.3",
+    "framer-motion": "^14.14.0",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
-    "pg": "^8.11.3"
+    "pg": "^8.11.3",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-router-dom": "^7.18.6"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.3.0",
+    "concurrently": "^10.0.7",
+    "vite": "^8.3.8"
   }
 }
