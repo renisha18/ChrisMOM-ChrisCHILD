@@ -20,7 +20,7 @@
     "build": "vite build client"
   },
   "dependencies": {
-    "bcrypt": "^5.1.1",
+    "bcryptjs": "^3.0.3",
     "connect-pg-simple": "^10.0.0",
     "dotenv": "^16.3.1",
     "express": "^4.22.1",

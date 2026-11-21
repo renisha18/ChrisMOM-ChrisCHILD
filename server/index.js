@@ -46,7 +46,7 @@ app.use("/api", groupRoutes);
 app.use("/api", joinRoutes);
 app.use("/api", (req, res) => res.status(404).json({ error: "Not found." }));
 
-if (isProd) {
+if (isProd && !process.env.VERCEL) {
   const dist = path.join(__dirname, "../client/dist");
   app.use(express.static(dist));
   app.get("*", (req, res) => res.sendFile(path.join(dist, "index.html")));
@@ -63,6 +63,10 @@ app.use((err, req, res, next) => {
 
 process.on("unhandledRejection", (err) => console.error("Unhandled rejection:", err));
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+  });
+}
+
+export default app;

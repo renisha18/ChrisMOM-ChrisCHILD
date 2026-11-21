@@ -1,5 +1,5 @@
 import { Router } from "express";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import passport from "passport";
 import { Strategy } from "passport-local";
 import db from "../db.js";
