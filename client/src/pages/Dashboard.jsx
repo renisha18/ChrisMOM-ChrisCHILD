@@ -36,18 +36,20 @@ export default function Dashboard() {
       <h2>My groups</h2>
       {groups === null && !error && <p>Loading...</p>}
       {groups?.length === 0 && <p>You haven't joined any groups yet.</p>}
-      <ul className="list">
-        {groups?.map((g) => (
-          <li key={g.id}>
-            <Link to={`/groups/${g.id}`}>
-              <strong>{g.name}</strong>
-            </Link>
-            <span className="muted">
-              {" "}· {g.member_count} members{g.is_admin ? " · admin" : ""}{g.drawn_at ? " · drawn" : ""}
+      <div className="tickets">
+        {groups?.map((g, i) => (
+          <Link key={g.id} to={`/groups/${g.id}`} className={`ticket ${i % 2 === 0 ? "red" : "green"}`}>
+            <span className="ticket-main">
+              <strong className="ticket-name">{g.name}</strong>
+              <span className="ticket-meta">
+                {g.member_count} members{g.is_admin ? " · admin" : ""}{g.drawn_at ? " · drawn" : ""}
+              </span>
             </span>
-          </li>
+            <span className="ticket-stub" aria-hidden="true">&#10052;</span>
+          </Link>
         ))}
-      </ul>
+        <Link to="/groups/new" className="ticket new">+ Create group</Link>
+      </div>
     </Page>
   );
 }

@@ -19,7 +19,7 @@ export default function AuthForm({ submitLabel, onSubmit }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="form">
+    <form onSubmit={handleSubmit} className="form card">
       <label>
         Username
         <input

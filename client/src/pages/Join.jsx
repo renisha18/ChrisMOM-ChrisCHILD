@@ -92,7 +92,7 @@ export default function Join() {
       ) : names.length === 0 ? (
         <p>All names in this group have been claimed. Ask the admin if you think this is a mistake.</p>
       ) : (
-        <form onSubmit={handleSubmit} className="form">
+        <form onSubmit={handleSubmit} className="form card">
           <label>
             Who are you?
             <select value={memberId} onChange={(e) => setMemberId(e.target.value)} required>

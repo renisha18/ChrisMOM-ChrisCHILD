@@ -53,10 +53,10 @@ export default function NewGroup() {
           <input value={myName} onChange={(e) => setMyName(e.target.value)} maxLength={50} required />
         </label>
 
-        <fieldset>
+        <fieldset className="chips">
           <legend>Other members</legend>
           {members.map((m, i) => (
-            <div className="member-row" key={i}>
+            <div className="member-row chip" key={i}>
               <input
                 value={m}
                 onChange={(e) => setMember(i, e.target.value)}
@@ -64,12 +64,12 @@ export default function NewGroup() {
                 maxLength={50}
                 aria-label={`Member ${i + 1} name`}
               />
-              <button type="button" className="secondary" onClick={() => removeRow(i)} aria-label={`Remove member ${i + 1}`}>
+              <button type="button" className="chip-x" onClick={() => removeRow(i)} aria-label={`Remove member ${i + 1}`}>
                 &times;
               </button>
             </div>
           ))}
-          <button type="button" className="secondary" onClick={addRow}>+ Add member</button>
+          <button type="button" className="outline" onClick={addRow}>+ Add member</button>
         </fieldset>
 
         {error && <p className="error" role="alert">{error}</p>}
