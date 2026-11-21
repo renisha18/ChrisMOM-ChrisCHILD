@@ -8,11 +8,12 @@ import Dashboard from "./pages/Dashboard.jsx";
 import NewGroup from "./pages/NewGroup.jsx";
 import Group from "./pages/Group.jsx";
 import Join from "./pages/Join.jsx";
+import Page from "./components/Page.jsx";
 
 function Protected({ children }) {
   const { user, loading } = useAuth();
   const location = useLocation();
-  if (loading) return <p className="center">Loading...</p>;
+  if (loading) return <Page back="/"><p>Loading...</p></Page>;
   if (!user) return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   return children;
 }
@@ -48,7 +49,8 @@ export default function App() {
           </Protected>
         }
       />
-      <Route path="*"element={<Navigate to="/" replace />} />
+      <Route path="/join/:code" element={<Join />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

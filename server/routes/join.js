@@ -3,6 +3,11 @@ import db from "../db.js";
 
 const router = Router();
 
+const toId = (v) => {
+  const n = Number(v);
+  return Number.isInteger(n) && n > 0 && n < 2147483647 ? n : null;
+};
+
 async function findGroup(code) {
   if (!/^[a-z0-9]{8}$/i.test(code)) return null;
   const { rows } = await db.query(
@@ -48,7 +53,8 @@ router.post("/join/:code/pending", async (req, res) => {
   try {
     const group = await findGroup(req.params.code);
     if (!group) return res.status(404).json({ error: "This invite link is not valid." });
-    const memberId = Number(req.body.memberId);
+    const memberId = toId(req.body.memberId);
+    if (!memberId) return res.status(400).json({ error: "Choose a name." });
     const { rows } = await db.query(
       "SELECT 1 FROM group_members WHERE id = $1 AND group_id = $2 AND user_id IS NULL",
       [memberId, group.id]
@@ -70,8 +76,8 @@ router.post("/join/:code/claim", async (req, res) => {
 
     const group = await findGroup(req.params.code);
     if (!group) return res.status(404).json({ error: "This invite link is not valid." });
-    const memberId = Number(req.body.memberId);
-    if (!Number.isInteger(memberId)) return res.status(400).json({ error: "Choose a name." });
+    const memberId = toId(req.body.memberId);
+    if (!memberId) return res.status(400).json({ error: "Choose a name." });
 
     const mine = await db.query(
       "SELECT 1 FROM group_members WHERE group_id = $1 AND user_id = $2",

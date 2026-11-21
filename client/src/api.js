@@ -17,6 +17,9 @@ export async function api(path, { method = "GET", body } = {}) {
   } catch {
     /* non-JSON response */
   }
+  if (res.status === 401 && path !== "/login") {
+    window.dispatchEvent(new Event("auth-expired")); // session ended: AuthProvider clears user
+  }
   if (!res.ok) throw new Error(data?.error || "Something went wrong. Please try again.");
   return data;
 }

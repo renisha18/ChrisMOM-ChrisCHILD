@@ -2,11 +2,11 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 // Page wrapper: fade-in, optional Back button to the logical parent route.
-export default function Page({ title, back, children }) {
+export default function Page({ title, back, wide, children }) {
   const navigate = useNavigate();
   return (
     <motion.main
-      className="page"
+      className={wide ? "page wide" : "page"}
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}

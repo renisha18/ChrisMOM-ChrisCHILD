@@ -8,7 +8,7 @@ export default function Register() {
   const navigate = useNavigate();
   const from = useLocation().state?.from || "/dashboard";
 
-  if (loading) return <p className="center">Loading...</p>;
+  if (loading) return <Page title="Create account" back="/"><p>Loading...</p></Page>;
   if (user) return <Navigate to={from} replace />;
 
   return (

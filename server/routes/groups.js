@@ -1,9 +1,15 @@
 import { Router } from "express";
 import crypto from "crypto";
 import db from "../db.js";
-import { encrypt } from "../lib/crypto.js";
+import { encrypt, decrypt } from "../lib/crypto.js";
 
 const router = Router();
+
+// Positive int4 or null, so junk/huge ids give a 404/400 instead of a DB error.
+const toId = (v) => {
+  const n = Number(v);
+  return Number.isInteger(n) && n > 0 && n < 2147483647 ? n : null;
+};
 
 function requireAuth(req, res, next) {
   if (!req.isAuthenticated()) return res.status(401).json({ error: "Please log in." });
@@ -96,14 +102,15 @@ router.post("/groups", async (req, res) => {
 // Group detail: members only
 router.get("/groups/:id", async (req, res) => {
   try {
-    const id = Number(req.params.id);
-    if (!Number.isInteger(id)) return res.status(404).json({ error: "Group not found." });
+    const id = toId(req.params.id);
+    if (!id) return res.status(404).json({ error: "Group not found." });
     const { rows } = await db.query("SELECT * FROM groups WHERE id = $1", [id]);
     const group = rows[0];
     const members = group
       ? (
           await db.query(
-            `SELECT id, display_name, (user_id IS NOT NULL) AS joined, (user_id = $2) AS is_me
+            `SELECT id, display_name, (user_id IS NOT NULL) AS joined, (user_id = $2) AS is_me,
+                    revealed_at, assigned_child
              FROM group_members WHERE group_id = $1 ORDER BY id`,
             [id, req.user.id]
           )
@@ -114,7 +121,16 @@ router.get("/groups/:id", async (req, res) => {
       return res.status(404).json({ error: "Group not found." });
     }
     const isAdmin = group.admin_id === req.user.id;
+    // Only my own revealed chit is ever disclosed.
+    const me = members.find((m) => m.is_me);
+    let childName = null;
+    if (group.drawn_at && me.revealed_at && me.assigned_child) {
+      const child = members.find((m) => m.id === Number(decrypt(me.assigned_child)));
+      childName = child ? child.display_name : null;
+    }
     res.json({
+      childName,
+      revealed: !!me.revealed_at,
       group: {
         id: group.id,
         name: group.name,
@@ -136,11 +152,46 @@ router.get("/groups/:id", async (req, res) => {
   }
 });
 
+// Reveal my Chris-Child (any member, after the draw). Any chit opens to my own assignment.
+router.post("/groups/:id/reveal", async (req, res) => {
+  try {
+    const id = toId(req.params.id);
+    if (!id) return res.status(404).json({ error: "Group not found." });
+    const { rows } = await db.query(
+      `UPDATE group_members m SET revealed_at = COALESCE(m.revealed_at, now())
+       FROM groups g
+       WHERE g.id = m.group_id AND g.id = $1 AND m.user_id = $2
+         AND g.drawn_at IS NOT NULL AND m.assigned_child IS NOT NULL
+       RETURNING m.assigned_child`,
+      [id, req.user.id]
+    );
+    if (!rows.length) {
+      // Distinguish "not a member" (404) from "not drawn yet" (409) without leaking.
+      const { rows: mem } = await db.query(
+        "SELECT 1 FROM group_members WHERE group_id = $1 AND user_id = $2",
+        [id, req.user.id]
+      );
+      if (!mem.length) return res.status(404).json({ error: "Group not found." });
+      return res.status(409).json({ error: "Names haven't been drawn yet." });
+    }
+    const childId = Number(decrypt(rows[0].assigned_child));
+    const child = await db.query(
+      "SELECT display_name FROM group_members WHERE id = $1 AND group_id = $2",
+      [childId, id]
+    );
+    if (!child.rows.length) throw new Error("Assigned child not found");
+    res.json({ childName: child.rows[0].display_name });
+  } catch (err) {
+    console.error("Reveal error:", err);
+    res.status(500).json({ error: "Could not open your chit. Please try again." });
+  }
+});
+
 // Draw (admin only): one cycle over shuffled members, so nobody gets themselves
 // and everyone has exactly one Chris-Mom. Members are locked after this.
 router.post("/groups/:id/draw", async (req, res) => {
-  const id = Number(req.params.id);
-  if (!Number.isInteger(id)) return res.status(404).json({ error: "Group not found." });
+  const id = toId(req.params.id);
+  if (!id) return res.status(404).json({ error: "Group not found." });
   let client;
   try {
     client = await db.connect();

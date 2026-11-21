@@ -16,6 +16,7 @@ const isProd = process.env.NODE_ENV === "production";
 
 if (!process.env.SESSION_SECRET) {
   console.error("SESSION_SECRET is not set. Add it to .env");
+  process.exit(1);
 }
 
 if (isProd) app.set("trust proxy", 1);
@@ -53,6 +54,9 @@ if (isProd) {
 
 // Last-resort error handler: never crash, always return JSON.
 app.use((err, req, res, next) => {
+  if (err.type === "entity.parse.failed") {
+    return res.status(400).json({ error: "Invalid request." });
+  }
   console.error("Unhandled error:", err);
   res.status(500).json({ error: "Something went wrong. Please try again." });
 });

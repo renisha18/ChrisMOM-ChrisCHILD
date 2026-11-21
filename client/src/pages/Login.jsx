@@ -8,7 +8,7 @@ export default function Login() {
   const navigate = useNavigate();
   const from = useLocation().state?.from || "/dashboard";
 
-  if (loading) return <p className="center">Loading...</p>;
+  if (loading) return <Page title="Log in" back="/"><p>Loading...</p></Page>;
   if (user) return <Navigate to={from} replace />;
 
   return (
