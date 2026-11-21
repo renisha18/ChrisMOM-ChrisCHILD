@@ -6,6 +6,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import db from "./db.js";
 import authRoutes from "./routes/auth.js";
+import groupRoutes from "./routes/groups.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -39,6 +40,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use("/api", authRoutes);
+app.use("/api", groupRoutes);
 app.use("/api", (req, res) => res.status(404).json({ error: "Not found." }));
 
 if (isProd) {

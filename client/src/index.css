@@ -27,3 +27,12 @@ button.secondary, .btn.secondary { background: #fff; color: #b3282d; }
 button:disabled { opacity: 0.6; cursor: default; }
 .back { background: none; color: #555; border: none; padding: 0; margin-bottom: 8px; }
 .error { color: #b00020; margin: 0; }
+textarea { padding: 8px; font-size: 1rem; font-family: inherit; border: 1px solid #bbb; border-radius: 6px; }
+fieldset { border: 1px solid #ddd; border-radius: 6px; padding: 12px; }
+.member-row { display: flex; gap: 8px; margin-bottom: 8px; }
+.member-row input { flex: 1; }
+.row.left { justify-content: flex-start; margin: 12px 0; }
+.list { padding-left: 20px; }
+.muted { color: #777; font-size: 0.9rem; }
+.panel { border: 1px solid #ddd; border-radius: 8px; padding: 12px 16px; margin: 16px 0; background: #fff; }
+.panel input { width: 100%; }

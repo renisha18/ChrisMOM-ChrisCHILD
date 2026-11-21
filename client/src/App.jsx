@@ -5,6 +5,8 @@ import HowToPlay from "./pages/HowToPlay.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
+import NewGroup from "./pages/NewGroup.jsx";
+import Group from "./pages/Group.jsx";
 
 function Protected({ children }) {
   const { user, loading } = useAuth();
@@ -29,7 +31,23 @@ export default function App() {
           </Protected>
         }
       />
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route
+        path="/groups/new"
+        element={
+          <Protected>
+            <NewGroup />
+          </Protected>
+        }
+      />
+      <Route
+        path="/groups/:id"
+        element={
+          <Protected>
+            <Group />
+          </Protected>
+        }
+      />
+      <Route path="*"element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
