@@ -1,0 +1,11 @@
+export { default as Bauble } from "./Bauble.jsx";
+export { default as CandyCane } from "./CandyCane.jsx";
+export { default as GiftBox } from "./GiftBox.jsx";
+export { default as Star } from "./Star.jsx";
+export { default as ChristmasTree } from "./ChristmasTree.jsx";
+export { default as Stocking } from "./Stocking.jsx";
+export { default as CocoaMug } from "./CocoaMug.jsx";
+export { default as WrappedCandy } from "./WrappedCandy.jsx";
+export { default as Holly } from "./Holly.jsx";
+export { default as Snowflake } from "./Snowflake.jsx";
+export { default as StampFrame } from "./StampFrame.jsx";

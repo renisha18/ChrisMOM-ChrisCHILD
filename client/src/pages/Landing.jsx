@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import Page from "../components/Page.jsx";
+import { Bauble as BaubleSticker, CandyCane, GiftBox, Star, ChristmasTree, Stocking, CocoaMug, WrappedCandy, Holly, Snowflake, StampFrame } from "../components/decor/index.js";
 
 const GOLD = "#C9A35B", RED = "#A3161E", RED_D = "#7E0F15", GREEN = "#1E4A2E", GREEN_D = "#163824", CREAM = "#FBF4E6", KRAFT = "#D9C7A7", PAPER = "#F3E7D3";
 
@@ -46,63 +47,32 @@ function Garland() {
   );
 }
 
-/* ---------- Side decor (original inline SVG) ---------- */
-const Tag = ({ color = KRAFT, ink = RED }) => (
-  <svg viewBox="0 0 90 140"><path d="M45 4c-8 0-12 6-8 12" fill="none" stroke={KRAFT} strokeWidth="3" /><path d="M45 4c-30 20-34 40-8 30" fill="none" stroke={GOLD} strokeWidth="2" />
-    <path d="M25 30h40l12 14v86H13V44z" fill={color} stroke={RED_D} strokeOpacity=".3" /><circle cx="45" cy="44" r="5" fill={CREAM} stroke={GOLD} strokeWidth="2" />
-    <path d="M24 70h42M24 84h30" stroke={ink} strokeOpacity=".5" strokeWidth="2" strokeLinecap="round" /><text x="45" y="116" textAnchor="middle" fontFamily="Pinyon Script, cursive" fontSize="24" fill={ink}>Joy</text></svg>
-);
-const Ticket = ({ color = RED, text = "ADMIT ONE" }) => (
-  <svg viewBox="0 0 150 76"><path d="M6 6h138v22a9 9 0 0 0 0 20v22H6V48a9 9 0 0 0 0-20z" fill={color} />
-    <path d="M104 8v60" stroke={CREAM} strokeDasharray="3 4" strokeWidth="2" /><rect x="12" y="12" width="86" height="52" rx="3" fill="none" stroke={GOLD} strokeWidth="1.5" />
-    <text x="55" y="42" textAnchor="middle" fontFamily="Cormorant SC, serif" fontWeight="700" fontSize="15" fill={CREAM}>{text}</text>
-    <path d="M124 26l3 8h8l-6 5 2 8-7-5-7 5 2-8-6-5h8z" fill={GOLD} /></svg>
-);
-const Envelope = () => (
-  <svg viewBox="0 0 150 120"><rect x="30" y="8" width="84" height="70" rx="3" fill={PAPER} transform="rotate(-5 72 43)" /><path d="M42 30h58M42 42h48M42 54h54" stroke={RED} strokeOpacity=".45" strokeWidth="2" strokeLinecap="round" transform="rotate(-5 72 43)" />
-    <path d="M34 4v22a5 5 0 0 0 10 0V8" fill="none" stroke="#9aa0a6" strokeWidth="2.5" strokeLinecap="round" />
-    <rect x="8" y="48" width="134" height="66" rx="6" fill={RED} /><path d="M8 54l67 40 67-40" fill="none" stroke={RED_D} strokeWidth="3" /><path d="M8 112l50-38M142 112l-50-38" stroke={RED_D} strokeWidth="2" />
-    <circle cx="75" cy="94" r="9" fill={GOLD} /></svg>
-);
-const Bow = ({ color = RED }) => (
-  <svg viewBox="0 0 100 80"><path d="M50 40C30 8 4 14 8 36c3 20 30 10 42 4zM50 40C70 8 96 14 92 36c-3 20-30 10-42 4z" fill={color} />
-    <path d="M50 42L28 76l12 2 10-26 10 26 12-2z" fill={color} stroke={RED_D} strokeOpacity=".4" /><rect x="42" y="30" width="16" height="20" rx="6" fill={color} stroke={RED_D} strokeOpacity=".5" /></svg>
-);
-const Holly = () => (
-  <svg viewBox="0 0 110 80"><path d="M55 44c-8-16-30-18-46-8 10 18 30 20 46 8zM55 44c8-16 30-18 46-8-10 18-30 20-46 8z" fill={GREEN} stroke={GREEN_D} />
-    <path d="M55 44L18 40M55 44l37-4" stroke={GREEN_D} strokeWidth="1.5" /><circle cx="48" cy="50" r="8" fill={RED} /><circle cx="63" cy="52" r="8" fill={RED} /><circle cx="55" cy="40" r="8" fill={RED_D} />
-    <circle cx="46" cy="47" r="2.2" fill="#fff" opacity=".6" /></svg>
-);
-const Tree = ({ color = GREEN }) => (
-  <svg viewBox="0 0 90 130"><rect x="38" y="104" width="14" height="22" fill={RED_D} /><path d="M45 6L18 46h14L8 80h20L4 112h82L62 80h20L58 46h14z" fill={color} />
-    <path d="M45 6l5 10-5 3-5-3z" fill={GOLD} /><circle cx="36" cy="60" r="4" fill={GOLD} /><circle cx="56" cy="76" r="4" fill={RED} /><circle cx="40" cy="96" r="4" fill={CREAM} /><circle cx="52" cy="38" r="3.5" fill={RED} /></svg>
-);
-const Star = () => (
-  <svg viewBox="0 0 90 90"><path d="M45 6l11 25 27 3-20 18 6 27-24-14-24 14 6-27L7 34l27-3z" fill={KRAFT} stroke="#B58A4E" strokeWidth="3" strokeLinejoin="round" />
-    <path d="M45 24l5 12 13 1-10 9 3 13-11-7-11 7 3-13-10-9 13-1z" fill="none" stroke={CREAM} strokeWidth="3" strokeDasharray="1 5" strokeLinecap="round" /><circle cx="45" cy="46" r="3" fill={RED} /></svg>
-);
-const Flake = () => (
-  <svg viewBox="0 0 60 60" fill="none" stroke={GREEN} strokeWidth="2.5" strokeLinecap="round">
-    {[0, 60, 120].map((r) => <g key={r} transform={`rotate(${r} 30 30)`}><path d="M30 4v52M22 12l8 6 8-6M22 48l8-6 8 6" /></g>)}</svg>
-);
-
-// side, top%, edge offset%, width px, rotation, comp, core (kept on tablet)
-const DECOR = [
-  ["l", 17, 3, 86, -9, <Tag />, 1], ["l", 14, 14, 76, 12, <Star />, 0], ["l", 36, 8, 140, -7, <Ticket />, 1],
-  ["l", 52, 1.5, 54, 10, <Flake />, 0], ["l", 55, 13, 84, 4, <Tree />, 1], ["l", 72, 4, 130, -5, <Envelope />, 1],
-  ["l", 80, 17, 86, -12, <Bow />, 0], ["l", 90, 7, 100, 8, <Holly />, 0],
-  ["r", 18, 4, 130, 7, <Envelope />, 1], ["r", 16, 17, 56, -8, <Flake />, 0], ["r", 36, 9, 84, 9, <Tag color={KRAFT} ink={GREEN} />, 1],
-  ["r", 50, 2, 90, -6, <Tree color={GREEN_D} />, 0], ["r", 56, 15, 140, 6, <Ticket color={GREEN} text="NICE LIST" />, 1],
-  ["r", 74, 5, 84, 11, <Star />, 0], ["r", 78, 15, 92, -8, <Bow color={GREEN} />, 1], ["r", 90, 8, 104, -6, <Holly />, 0],
+/* ---------- Sticker scatter: [Component, left%, top%, width px, rotation, show on mobile] ---------- */
+const S = [
+  [ChristmasTree, 2, 20, 120, -6, 1], [GiftBox, 14, 30, 96, 8, 1], [Stocking, 5, 52, 84, -10, 0], [CocoaMug, 15, 56, 100, 6, 1],
+  [StampFrame, 3, 72, 100, 5, 0], [CandyCane, 17, 76, 64, -14, 1], [Holly, 8, 90, 90, 8, 0], [Star, 22, 16, 64, 14, 0], [Snowflake, 24, 44, 52, 0, 0],
+  [CandyCane, 90, 22, 64, 12, 0], [BaubleSticker, 80, 17, 70, -8, 1], [StampFrame, 87, 34, 104, -6, 1], [Star, 77, 50, 62, -12, 0],
+  [GiftBox, 90, 58, 100, -8, 1], [ChristmasTree, 79, 66, 112, 6, 0], [WrappedCandy, 87, 80, 110, 10, 1], [Snowflake, 74, 34, 50, 0, 0], [Holly, 79, 90, 88, -8, 0],
+  [WrappedCandy, 36, 7, 90, -8, 0], [Star, 60, 9, 54, 10, 0], [Holly, 34, 91, 84, 6, 0], [CocoaMug, 60, 88, 92, -6, 0], [Stocking, 48, 92, 70, 8, 0],
 ];
 
 export default function Landing() {
   return (
     <Page hero>
+      <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true" focusable="false">
+        <filter id="grain" x="0" y="0" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4" result="n" />
+          <feColorMatrix in="n" type="matrix" values="0 0 0 0 .23  0 0 0 0 .16  0 0 0 0 .12  0 0 0 -1.1 .75" result="g" />
+          <feComposite in="g" in2="SourceAlpha" operator="in" result="gi" />
+          <feBlend in="SourceGraphic" in2="gi" mode="multiply" />
+        </filter>
+      </svg>
       <Garland />
       <div className="scene" aria-hidden="true">
-        {DECOR.map(([side, top, off, w, rot, el, core], i) => (
-          <span key={i} className={`dec${core ? " core" : ""}`} style={{ top: `${top}%`, [side === "l" ? "left" : "right"]: `${off}%`, width: w, transform: `rotate(${rot}deg)`, zIndex: i % 3 }}>{el}</span>
+        {S.map(([Comp, x, y, w, rot, m], i) => (
+          <span key={i} className={`dec${m ? " core" : ""}`} style={{ left: `${x}%`, top: `${y}%`, width: w, "--r": `${rot}deg`, zIndex: i % 3 }}>
+            <Comp />
+          </span>
         ))}
       </div>
       <div className="center">
