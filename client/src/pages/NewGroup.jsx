@@ -69,7 +69,9 @@ export default function NewGroup() {
               </button>
             </div>
           ))}
-          <button type="button" className="outline" onClick={addRow}>+ Add member</button>
+          <div className="add-row">
+            <button type="button" className="outline" onClick={addRow}>+ Add member</button>
+          </div>
         </fieldset>
 
         {error && <p className="error" role="alert">{error}</p>}

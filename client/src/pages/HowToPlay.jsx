@@ -10,16 +10,18 @@ const RULES = [
 
 export default function HowToPlay() {
   return (
-    <Page narrow title="How to Play" back="/">
+    <Page title="How to Play" back="/">
       <section className="green-section">
         <h2 className="script">The Rules</h2>
-        {RULES.map((rule, i) => (
-          <div className="tag" key={i}>
-            <span className="twine" aria-hidden="true" />
-            <span className="num">Step {i + 1}</span>
-            {rule}
-          </div>
-        ))}
+        <div className="tags-grid">
+          {RULES.map((rule, i) => (
+            <div className="tag" key={i}>
+              <span className="twine" aria-hidden="true" />
+              <span className="num">Step {i + 1}</span>
+              {rule}
+            </div>
+          ))}
+        </div>
       </section>
       <h2>About</h2>
       <p>

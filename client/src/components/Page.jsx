@@ -2,7 +2,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 // Page wrapper: fade-in, optional Back pill to the logical parent route.
-export default function Page({ title, back, narrow, hero, children }) {
+export default function Page({ title, back, narrow, hero, action, children }) {
   const navigate = useNavigate();
   const reduce = useReducedMotion();
   return (
@@ -17,7 +17,7 @@ export default function Page({ title, back, narrow, hero, children }) {
           &larr; Back
         </button>
       )}
-      {title && <h1>{title}</h1>}
+      {title && (action ? <div className="page-head"><h1>{title}</h1>{action}</div> : <h1>{title}</h1>)}
       {children}
     </motion.main>
   );

@@ -1,8 +1,60 @@
-import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { useParams } from "react-router-dom";
 import { api } from "../api.js";
 import Page from "../components/Page.jsx";
+
+// Chits shuffle on their own when they appear, then settle so one can be tapped.
+function ShuffleChits({ members, onPick, disabled }) {
+  const reduce = useReducedMotion();
+  const [order, setOrder] = useState(members.map((m) => m.id));
+  const [shuffling, setShuffling] = useState(!reduce);
+
+  useEffect(() => {
+    if (reduce) return undefined;
+    let n = 0;
+    const t = setInterval(() => {
+      n += 1;
+      setOrder((o) => {
+        const a = [...o];
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      });
+      if (n >= 6) {
+        clearInterval(t);
+        setShuffling(false);
+      }
+    }, 450);
+    return () => clearInterval(t);
+  }, [reduce]);
+
+  return (
+    <>
+      <p>{shuffling ? "Shuffling the chits..." : "Pick any chit to open yours."}</p>
+      <div className="chits">
+        {order.map((id) => (
+          <motion.button
+            key={id}
+            layout={!reduce}
+            transition={{ type: "spring", stiffness: 260, damping: 22 }}
+            type="button"
+            className="chit"
+            onClick={onPick}
+            disabled={disabled || shuffling}
+            aria-label="Open a chit"
+          >
+            <span className="twine-v" aria-hidden="true" />
+            <span className="twine-h" aria-hidden="true" />
+            <span className="bow" aria-hidden="true">&#10086;</span>
+          </motion.button>
+        ))}
+      </div>
+    </>
+  );
+}
 
 export default function Group() {
   const { id } = useParams();
@@ -16,7 +68,6 @@ export default function Group() {
   const [openedName, setOpenedName] = useState(null);
   const [opening, setOpening] = useState(false);
   const [chitError, setChitError] = useState("");
-  const chitsRef = useRef(null);
 
   function load() {
     return api(`/groups/${id}`)
@@ -90,7 +141,27 @@ export default function Group() {
   }
 
   return (
-    <Page title={group.name} back="/dashboard">
+    <Page
+      title={group.name}
+      back="/dashboard"
+      action={
+        <button
+          type="button"
+          className="icon-btn"
+          aria-label="Members"
+          title="Members"
+          aria-pressed={showMembers}
+          onClick={() => setShowMembers((s) => !s)}
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="9" cy="8" r="3.5" />
+            <path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6" />
+            <circle cx="17.5" cy="9" r="2.5" />
+            <path d="M17 14.2c2.7.2 4.5 2 4.5 4.8" />
+          </svg>
+        </button>
+      }
+    >
       <div className="group-layout">
         <div className="group-main">
           {group.description && (
@@ -104,16 +175,7 @@ export default function Group() {
             </div>
           )}
 
-          <button
-            type="button"
-            disabled={!group.drawn}
-            onClick={() => chitsRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })}
-          >
-            Find your Chris-Child
-          </button>
-          <p className="muted">{group.drawn ? "Names have been drawn." : "Available once the admin draws names."}</p>
-
-          <section className="panel" ref={chitsRef}>
+          <section className="panel">
             <h2>Chits</h2>
             {!group.drawn && <p className="muted">Chits appear once the admin draws names.</p>}
             {group.drawn && (data.revealed || openedName) && (
@@ -130,34 +192,13 @@ export default function Group() {
               </motion.div>
             )}
             {group.drawn && !data.revealed && !openedName && (
-              <>
-                <p>Pick any chit to open yours.</p>
-                <div className="chits">
-                  {members.map((m) => (
-                    <button
-                      key={m.id}
-                      type="button"
-                      className="chit"
-                      onClick={openChit}
-                      disabled={opening}
-                      aria-label="Open a chit"
-                    >
-                      <span className="twine-v" aria-hidden="true" />
-                      <span className="twine-h" aria-hidden="true" />
-                      <span className="bow" aria-hidden="true">&#10086;</span>
-                    </button>
-                  ))}
-                </div>
-              </>
+              <ShuffleChits members={members} onPick={openChit} disabled={opening} />
             )}
             {chitError && <p className="error" role="alert">{chitError}</p>}
           </section>
         </div>
 
         <aside className="group-side">
-          <button type="button" className="secondary" onClick={() => setShowMembers((s) => !s)}>
-            {showMembers ? "Hide members" : `Show members (${members.length})`}
-          </button>
           {showMembers && (
             <section className="panel">
               <h2>Members ({members.length})</h2>

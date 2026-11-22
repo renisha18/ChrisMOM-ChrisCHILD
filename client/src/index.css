@@ -238,7 +238,7 @@ fieldset { border: 1.5px dashed var(--kraft); border-radius: 14px; padding: 12px
   border-radius: 12px;
   -webkit-mask: none;
   mask: none;
-  border: 2px dashed var(--green);
+  border: 1px solid var(--green);
 }
 
 /* NewGroup member name chips */
@@ -326,3 +326,18 @@ fieldset { border: 1.5px dashed var(--kraft); border-radius: 14px; padding: 12px
 .chit-name { font-family: var(--font-script); font-size: 2.8rem; font-weight: 400; margin: 4px 0; color: var(--red); line-height: 1.1; overflow-wrap: anywhere; }
 
 @media (prefers-reduced-motion: reduce) { .chit:hover:not(:disabled) { transform: none; } }
+
+/* Group header icon button */
+.page-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.page-head h1 { margin: 0 0 12px; min-width: 0; overflow-wrap: anywhere; }
+.icon-btn { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; padding: 0; margin-bottom: 12px; border-radius: 50%; background: var(--red); border-color: var(--red); color: var(--cream); }
+.icon-btn:hover:not(:disabled) { background: var(--red-dark); }
+.icon-btn[aria-pressed="false"] { background: transparent; color: var(--red); }
+
+/* How to Play: tags grid */
+.tags-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px 20px; }
+.tags-grid .tag { margin: 0 0 18px 14px; }
+@media (max-width: 1023px) { .tags-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 639px) { .tags-grid { grid-template-columns: 1fr; } }
+
+.chips .add-row { flex: 0 0 100%; display: flex; justify-content: flex-start; }
