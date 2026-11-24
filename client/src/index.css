@@ -375,3 +375,23 @@ fieldset { border: 1.5px dashed var(--kraft); border-radius: 14px; padding: 12px
   .sheet-backdrop { display: block; position: fixed; inset: 0; z-index: 40; background: rgba(40, 24, 16, .5); }
   .members-pop { position: fixed; left: 0; right: 0; bottom: 0; top: auto; width: auto; max-height: 70vh; z-index: 41; border-radius: 20px 20px 0 0; border-bottom: 0; padding: 20px 16px 28px; }
 }
+
+/* Dares */
+.toggle { display: flex; flex-direction: row; align-items: flex-start; gap: 12px; cursor: pointer; }
+.toggle input { flex: none; width: 20px; height: 20px; margin-top: 2px; accent-color: var(--green-dark); }
+.toggle span { display: flex; flex-direction: column; gap: 2px; font-weight: 600; }
+.toggle small { font-weight: 400; color: #7a6a5a; font-size: 0.85rem; }
+.note-row { display: flex; align-items: flex-start; gap: 16px; }
+.note-row .envelope { flex: 1; min-width: 0; }
+.dare-pill-wrap { flex: none; display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 6px; }
+@media (max-width: 767px) { .note-row { flex-direction: column; } .dare-pill-wrap { flex-direction: row; align-items: center; margin-top: 0; } }
+.dare-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.dare { padding: 10px 14px; background: var(--cream); border: 1.5px dashed var(--kraft); border-radius: 12px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.dare p { margin: 0; overflow-wrap: anywhere; }
+.dare.done { opacity: 0.75; }
+.dare-from { font-family: var(--font-script, "Pinyon Script", cursive); color: var(--red); font-size: 1.2rem; }
+.dare-status { font-size: 0.8rem; font-weight: 600; color: var(--green); text-transform: uppercase; letter-spacing: 0.05em; }
+.dare-preview { margin: 8px 0 0; padding: 10px 14px; background: var(--paper); border-left: 4px solid var(--gold); border-radius: 6px; overflow-wrap: anywhere; white-space: pre-wrap; }
+.char-count { align-self: flex-end; }
+.dare-badge { align-self: flex-start; margin-top: 4px; padding: 2px 10px; border-radius: 999px; background: var(--gold); color: var(--ink); font-size: 0.75rem; font-weight: 700; }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 100; padding: 12px 22px; background: var(--green-dark); color: var(--cream); border: 2px solid var(--gold); border-radius: 999px; box-shadow: 0 8px 20px rgba(0,0,0,.3); }

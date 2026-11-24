@@ -64,7 +64,7 @@ export default function Group() {
   const [showMembers, setShowMembers] = useState(false);
   const [confirmDraw, setConfirmDraw] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [form, setForm] = useState({ name: "", description: "" });
+  const [form, setForm] = useState({ name: "", description: "", daresEnabled: false });
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const anchorRef = useRef(null);
@@ -75,6 +75,15 @@ export default function Group() {
   const [openedName, setOpenedName] = useState(null);
   const [opening, setOpening] = useState(false);
   const [chitError, setChitError] = useState("");
+
+  const [dares, setDares] = useState(null); // { sent, received }
+  const [daresError, setDaresError] = useState("");
+  const [showDare, setShowDare] = useState(false);
+  const [confirmDare, setConfirmDare] = useState(false);
+  const [dareText, setDareText] = useState("");
+  const [dareSending, setDareSending] = useState(false);
+  const [dareError, setDareError] = useState("");
+  const [toast, setToast] = useState("");
 
   function load() {
     return api(`/groups/${id}`)
@@ -88,6 +97,56 @@ export default function Group() {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  const daresOn = !!(data?.group.daresEnabled && data?.group.drawn);
+
+  function loadDares() {
+    return api(`/groups/${id}/dares`)
+      .then((d) => { setDares(d); setDaresError(""); })
+      .catch((err) => setDaresError(err.message));
+  }
+
+  useEffect(() => {
+    setDares(null);
+    if (daresOn) loadDares();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, daresOn]);
+
+  useEffect(() => {
+    if (!toast) return undefined;
+    const t = setTimeout(() => setToast(""), 3500);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  function openDare() {
+    setDareError("");
+    setShowDare(true);
+  }
+
+  async function sendDare() {
+    setDareSending(true);
+    setDareError("");
+    try {
+      await api(`/groups/${id}/dares`, { method: "POST", body: { text: dareText.trim() } });
+      setConfirmDare(false);
+      setDareText("");
+      setToast("Dare sent to your Chris-Child!");
+      loadDares();
+    } catch (err) {
+      setDareError(err.message);
+    } finally {
+      setDareSending(false);
+    }
+  }
+
+  async function markDone(dareId) {
+    try {
+      await api(`/dares/${dareId}/done`, { method: "POST" });
+      await loadDares();
+    } catch (err) {
+      setDaresError(err.message);
+    }
+  }
 
   async function handleDraw() {
     setConfirmDraw(false);
@@ -152,7 +211,7 @@ export default function Group() {
   )}`;
 
   function openSettings() {
-    setForm({ name: group.name, description: group.description || "" });
+    setForm({ name: group.name, description: group.description || "", daresEnabled: !!group.daresEnabled });
     setSaveError("");
     setShowSettings(true);
   }
@@ -162,7 +221,7 @@ export default function Group() {
     setSaving(true);
     setSaveError("");
     try {
-      await api(`/groups/${id}`, { method: "PATCH", body: { name: form.name, description: form.description } });
+      await api(`/groups/${id}`, { method: "PATCH", body: { name: form.name, description: form.description, daresEnabled: form.daresEnabled } });
       await load();
       setShowSettings(false);
     } catch (err) {
@@ -239,14 +298,24 @@ export default function Group() {
     >
       <div className="group-layout">
         <div className="group-main">
-          {group.description && (
-            <div className="envelope">
-              <div className="note">
-                <svg className="clip" width="22" height="46" viewBox="0 0 22 46" aria-hidden="true">
-                  <path d="M7 40V10a4 4 0 0 1 8 0v26a7 7 0 0 1-14 0V12" fill="none" stroke="#C9A35B" strokeWidth="2.5" strokeLinecap="round" transform="translate(3 0)" />
-                </svg>
-                <p>{group.description}</p>
-              </div>
+          {(group.description || (group.daresEnabled && !group.isAdmin)) && (
+            <div className="note-row">
+              {group.description && (
+                <div className="envelope">
+                  <div className="note">
+                    <svg className="clip" width="22" height="46" viewBox="0 0 22 46" aria-hidden="true">
+                      <path d="M7 40V10a4 4 0 0 1 8 0v26a7 7 0 0 1-14 0V12" fill="none" stroke="#C9A35B" strokeWidth="2.5" strokeLinecap="round" transform="translate(3 0)" />
+                    </svg>
+                    <p>{group.description}</p>
+                  </div>
+                </div>
+              )}
+              {group.daresEnabled && !group.isAdmin && (
+                <div className="dare-pill-wrap">
+                  <button type="button" className="secondary" onClick={openDare} disabled={!group.drawn}>Send dare</button>
+                  {!group.drawn && <span className="muted">After the draw</span>}
+                </div>
+              )}
             </div>
           )}
 
@@ -271,6 +340,41 @@ export default function Group() {
             )}
             {chitError && <p className="error" role="alert">{chitError}</p>}
           </section>
+
+          {daresOn && (
+            <>
+              <section className="panel">
+                <h2>Dares for you</h2>
+                {daresError && <p className="error" role="alert">{daresError}</p>}
+                {dares && dares.received.length === 0 && <p className="muted">No dares yet. Your Chris-Mom may be plotting...</p>}
+                <ul className="dare-list">
+                  {dares?.received.map((d) => (
+                    <li key={d.id} className={d.done ? "dare done" : "dare"}>
+                      <span className="dare-from">From your Chris-Mom</span>
+                      <p>{d.text}</p>
+                      {d.done ? (
+                        <span className="dare-status">Done &#10003;</span>
+                      ) : (
+                        <button type="button" onClick={() => markDone(d.id)}>Done</button>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+              <section className="panel">
+                <h2>Dares you sent</h2>
+                {dares && dares.sent.length === 0 && <p className="muted">You haven&apos;t sent any dares yet.</p>}
+                <ul className="dare-list">
+                  {dares?.sent.map((d) => (
+                    <li key={d.id} className={d.done ? "dare done" : "dare"}>
+                      <p>{d.text}</p>
+                      <span className="dare-status">{d.done ? "Done \u2713" : "Not done yet"}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            </>
+          )}
         </div>
 
         <aside className="group-side">
@@ -282,6 +386,15 @@ export default function Group() {
                 <button type="button" className="outline" onClick={copyLink}>{copied ? "Copied!" : "Copy link"}</button>
                 <a className="btn red" href={waHref} target="_blank" rel="noreferrer">Share on WhatsApp</a>
               </div>
+            </section>
+          )}
+
+          {group.isAdmin && group.daresEnabled && (
+            <section className="panel">
+              <h2>Send a dare</h2>
+              <p className="muted">Challenge your Chris-Child. They won&apos;t know it&apos;s you.</p>
+              <button type="button" onClick={openDare} disabled={!group.drawn}>Send a dare</button>
+              {!group.drawn && <p className="muted">Available after the draw.</p>}
             </section>
           )}
 
@@ -303,6 +416,44 @@ export default function Group() {
           )}
         </aside>
       </div>
+
+      <Modal
+        open={showDare}
+        title="Send a dare"
+        confirmLabel="Send"
+        onConfirm={() => {
+          if (!dareText.trim()) return setDareError("Write your dare first.");
+          setDareError("");
+          setShowDare(false);
+          setConfirmDare(true);
+        }}
+        onClose={() => setShowDare(false)}
+      >
+        <div className="form">
+          <label>
+            Your dare for your Chris-Child
+            <textarea rows={4} maxLength={280} value={dareText} onChange={(e) => setDareText(e.target.value)} />
+          </label>
+          <span className="muted char-count">{dareText.length}/280</span>
+          {dareError && <p className="error" role="alert">{dareError}</p>}
+        </div>
+      </Modal>
+
+      <Modal
+        open={confirmDare}
+        title="Are you sure?"
+        confirmLabel={dareSending ? "Sending..." : "Send"}
+        cancelLabel="Edit"
+        busy={dareSending}
+        onConfirm={sendDare}
+        onClose={() => { setConfirmDare(false); setShowDare(true); }}
+      >
+        <p>Send this dare to your Chris-Child?</p>
+        <blockquote className="dare-preview">{dareText.trim()}</blockquote>
+        {dareError && <p className="error" role="alert">{dareError}</p>}
+      </Modal>
+
+      {toast && <div className="toast" role="status">{toast}</div>}
 
       <Modal
         open={confirmDraw}
@@ -330,6 +481,10 @@ export default function Group() {
           <label>
             Description
             <textarea rows={3} maxLength={500} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+          </label>
+          <label className="toggle">
+            <input type="checkbox" role="switch" checked={form.daresEnabled} onChange={(e) => setForm({ ...form, daresEnabled: e.target.checked })} />
+            <span>Enable dares<small>Members can send secret dares to their Chris-Child.</small></span>
           </label>
           {saveError && <p className="error" role="alert">{saveError}</p>}
         </div>

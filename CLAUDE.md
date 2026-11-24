@@ -7,6 +7,8 @@ Stack: server/ = Node + Express JSON API under /api (Postgres pg Pool on Neon, p
 - groups(id, name, description, invite_code unique (random 8 chars), admin_id -> users, drawn_at null, created_at)
 - group_members(id, group_id, display_name, user_id null -> users, assigned_child encrypted (child's member id) null, revealed_at null)
   unique(group_id, display_name), unique(group_id, user_id)
+- groups.dares_enabled boolean default false (migrations/002_dares.sql)
+- dares(id, group_id, from_member_id, to_member_id, text varchar(280), created_at, seen_at null, done_at null)
 
 ## Flow
 (Paths below are React routes; each is backed by /api endpoints. Protected pages redirect to /login and return to where the user came from.)
@@ -18,6 +20,12 @@ Stack: server/ = Node + Express JSON API under /api (Postgres pg Pool on Neon, p
 /groups/:id: name, description, Members panel (right, toggle, shows joined/not joined), chits (left/middle), "Find your Chris-Child" button disabled until drawn.
   Admin only: invite link + "Share on WhatsApp" (wa.me/?text=), "Send Chris-Child" (needs >=3 members, not yet drawn).
 /join/:code: group preview + dropdown of unclaimed names -> login or register -> claim name -> /groups/:id
+
+Dares (optional, groups.dares_enabled; toggle on /groups/new and admin settings modal):
+- POST /api/groups/:id/dares {text}: members only, after draw. Sender = my member row, recipient = my assigned child (server-side only). Trimmed 1-280 chars, max 10 per rolling 24h per sender.
+- GET /api/groups/:id/dares: {sent, received}; received never exposes sender; marks received seen. POST /api/dares/:id/done: recipient only.
+- GET /api/groups includes new_dares (unseen count) -> Dashboard ticket badge "N new dares".
+- Group page: admin gets "Send a dare" card under Invite; members get a "Send dare" pill beside the description note. Compose modal -> confirm modal -> toast. "Dares for you" (From your Chris-Mom + Done) and "Dares you sent" cards. Disabled before draw.
 
 Draw: shuffle all members, each gets the next (last -> first), save in one transaction, set drawn_at. Members locked after draw.
 Reveal: pick any chit -> opens to your assigned name, set revealed_at. If revealed_at set, show the opened chit directly.

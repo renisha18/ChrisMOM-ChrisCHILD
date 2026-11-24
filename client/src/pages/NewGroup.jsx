@@ -11,6 +11,7 @@ export default function NewGroup() {
   const [members, setMembers] = useState(["", ""]);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [daresEnabled, setDaresEnabled] = useState(false);
 
   const setMember = (i, v) => setMembers((m) => m.map((x, j) => (j === i ? v : x)));
   const addRow = () => setMembers((m) => [...m, ""]);
@@ -28,7 +29,7 @@ export default function NewGroup() {
     try {
       const d = await api("/groups", {
         method: "POST",
-        body: { name: name.trim(), description: description.trim(), myName: myName.trim(), members: others },
+        body: { name: name.trim(), description: description.trim(), myName: myName.trim(), members: others, daresEnabled },
       });
       navigate(`/groups/${d.id}`, { replace: true });
     } catch (err) {
@@ -73,6 +74,11 @@ export default function NewGroup() {
             <button type="button" className="outline" onClick={addRow}>+ Add member</button>
           </div>
         </fieldset>
+
+        <label className="toggle">
+          <input type="checkbox" role="switch" checked={daresEnabled} onChange={(e) => setDaresEnabled(e.target.checked)} />
+          <span>Enable dares<small>Members can send secret dares to their Chris-Child.</small></span>
+        </label>
 
         {error && <p className="error" role="alert">{error}</p>}
         <button type="submit" disabled={busy}>{busy ? "Creating..." : "Create group"}</button>

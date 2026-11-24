@@ -44,6 +44,9 @@ export default function Dashboard() {
               <span className="ticket-meta">
                 {g.member_count} members{g.is_admin ? " · admin" : ""}{g.drawn_at ? " · drawn" : ""}
               </span>
+              {g.new_dares > 0 && (
+                <span className="dare-badge">{g.new_dares} new {g.new_dares === 1 ? "dare" : "dares"}</span>
+              )}
             </span>
             <span className="ticket-stub" aria-hidden="true">&#10052;</span>
           </Link>

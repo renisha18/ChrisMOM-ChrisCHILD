@@ -28,7 +28,9 @@ function makeCode() {
 router.get("/groups", async (req, res) => {
   try {
     const { rows } = await db.query(
-      `SELECT g.id, g.name, g.description, g.drawn_at, (g.admin_id = $1) AS is_admin,
+      `SELECT g.id, g.name, g.description, g.drawn_at, g.dares_enabled, (g.admin_id = $1) AS is_admin,
+              CASE WHEN g.dares_enabled THEN (SELECT COUNT(*)::int FROM dares d
+                WHERE d.to_member_id = me.id AND d.seen_at IS NULL) ELSE 0 END AS new_dares,
               (SELECT COUNT(*)::int FROM group_members m WHERE m.group_id = g.id) AS member_count
        FROM groups g
        JOIN group_members me ON me.group_id = g.id AND me.user_id = $1
@@ -54,6 +56,7 @@ router.post("/groups", async (req, res) => {
   if (!name || name.length > 100) return res.status(400).json({ error: "Group name is required (max 100 characters)." });
   if (description.length > 500) return res.status(400).json({ error: "Description is too long (max 500 characters)." });
   if (!myName) return res.status(400).json({ error: "Enter your name in this group." });
+  const daresEnabled = req.body.daresEnabled === true;
   const all = [myName, ...others];
   if (all.some((n) => n.length > 50)) return res.status(400).json({ error: "Names must be 50 characters or fewer." });
   if (new Set(all.map((n) => n.toLowerCase())).size !== all.length) {
@@ -70,9 +73,9 @@ router.post("/groups", async (req, res) => {
       await client.query("SAVEPOINT code_try");
       try {
         const r = await client.query(
-          `INSERT INTO groups (name, description, invite_code, admin_id)
-           VALUES ($1, $2, $3, $4) RETURNING id`,
-          [name, description || null, makeCode(), req.user.id]
+          `INSERT INTO groups (name, description, invite_code, admin_id, dares_enabled)
+           VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+          [name, description || null, makeCode(), req.user.id, daresEnabled]
         );
         group = r.rows[0];
       } catch (e) {
@@ -114,7 +117,12 @@ router.patch("/groups/:id", async (req, res) => {
       : null;
     if (!rows[0] || !member) return res.status(404).json({ error: "Group not found." });
     if (rows[0].admin_id !== req.user.id) return res.status(403).json({ error: "Only the admin can edit this group." });
-    await db.query("UPDATE groups SET name = $1, description = $2 WHERE id = $3", [name, description || null, id]);
+    // daresEnabled is optional so older clients keep working.
+    const dares = typeof req.body.daresEnabled === "boolean" ? req.body.daresEnabled : null;
+    await db.query(
+      "UPDATE groups SET name = $1, description = $2, dares_enabled = COALESCE($4, dares_enabled) WHERE id = $3",
+      [name, description || null, id, dares]
+    );
     res.json({ ok: true });
   } catch (err) {
     console.error("Update group error:", err);
@@ -159,6 +167,7 @@ router.get("/groups/:id", async (req, res) => {
         name: group.name,
         description: group.description,
         drawn: !!group.drawn_at,
+        daresEnabled: group.dares_enabled,
         isAdmin,
         inviteCode: isAdmin ? group.invite_code : undefined,
       },
