@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import Page from "../components/Page.jsx";
 import { Bauble as BaubleSticker, CandyCane, GiftBox, Star, ChristmasTree, Stocking, CocoaMug, WrappedCandy, Holly, Snowflake, StampFrame } from "../components/decor/index.js";
@@ -47,16 +48,45 @@ function Garland() {
   );
 }
 
-/* ---------- Sticker scatter: [Component, left%, top%, width px, rotation, show on mobile] ---------- */
+/* ---------- Sticker scatter (>=1100px, side gutters only): [Component, side, f 0..1 across gutter, top%, width px, rotation] ---------- */
 const S = [
-  [ChristmasTree, 2, 20, 120, -6, 1], [GiftBox, 14, 30, 96, 8, 1], [Stocking, 5, 52, 84, -10, 0], [CocoaMug, 15, 56, 100, 6, 1],
-  [StampFrame, 3, 72, 100, 5, 0], [CandyCane, 17, 76, 64, -14, 1], [Holly, 8, 90, 90, 8, 0], [Star, 22, 16, 64, 14, 0], [Snowflake, 24, 44, 52, 0, 0],
-  [CandyCane, 90, 22, 64, 12, 0], [BaubleSticker, 80, 17, 70, -8, 1], [StampFrame, 87, 34, 104, -6, 1], [Star, 77, 50, 62, -12, 0],
-  [GiftBox, 90, 58, 100, -8, 1], [ChristmasTree, 79, 66, 112, 6, 0], [WrappedCandy, 87, 80, 110, 10, 1], [Snowflake, 74, 34, 50, 0, 0], [Holly, 79, 90, 88, -8, 0],
-  [WrappedCandy, 36, 7, 90, -8, 0], [Star, 60, 9, 54, 10, 0], [Holly, 34, 91, 84, 6, 0], [CocoaMug, 60, 88, 92, -6, 0], [Stocking, 48, 92, 70, 8, 0],
+  [ChristmasTree, "l", 0.07, 20, 120, -6], [GiftBox, "l", 0.47, 30, 96, 8], [Stocking, "l", 0.17, 52, 84, -10], [CocoaMug, "l", 0.5, 56, 100, 6],
+  [StampFrame, "l", 0.1, 72, 100, 5], [CandyCane, "l", 0.57, 76, 64, -14], [Holly, "l", 0.27, 90, 90, 8], [Star, "l", 0.73, 16, 64, 14], [Snowflake, "l", 0.8, 44, 52, 0],
+  [CandyCane, "r", 0.33, 22, 64, 12], [BaubleSticker, "r", 0.67, 17, 70, -8], [StampFrame, "r", 0.43, 34, 104, -6], [Star, "r", 0.87, 50, 62, -12],
+  [GiftBox, "r", 0.33, 58, 100, -8], [ChristmasTree, "r", 0.7, 66, 112, 6], [WrappedCandy, "r", 0.43, 80, 110, 10], [Snowflake, "r", 0.87, 34, 50, 0], [Holly, "r", 0.7, 90, 88, -8],
 ];
+/* <1100px: small centered rows above the tagline / below the buttons: [Component, width px, rotation] */
+const ROW_TOP = [[ChristmasTree, 56, -6], [GiftBox, 56, 6], [BaubleSticker, 48, -4]];
+const ROW_BOTTOM = [[CocoaMug, 56, 4], [CandyCane, 40, -10], [WrappedCandy, 64, 8]];
+
+const DecoRow = ({ items, below }) => (
+  <div className={`deco-row${below ? " below" : ""}`} aria-hidden="true">
+    {items.map(([Comp, w, rot], i) => (
+      <span key={i} className="deco-item" style={{ "--w": `${w}px`, "--r": `${rot}deg` }}><Comp /></span>
+    ))}
+  </div>
+);
 
 export default function Landing() {
+  // Dev-only guard: warn if any visible scattered decor intersects the title block.
+  useEffect(() => {
+    if (!import.meta.env.DEV) return undefined;
+    const check = () => {
+      const c = document.querySelector(".page.hero > .center")?.getBoundingClientRect();
+      if (!c) return;
+      document.querySelectorAll(".dec").forEach((el) => {
+        const r = el.getBoundingClientRect();
+        if (!r.width || !r.height) return; // hidden
+        if (r.left < c.right && r.right > c.left && r.top < c.bottom && r.bottom > c.top) {
+          console.warn("[Landing] decor overlaps .center at", window.innerWidth + "px:", el);
+        }
+      });
+    };
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   return (
     <Page hero>
       <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true" focusable="false">
@@ -69,13 +99,14 @@ export default function Landing() {
       </svg>
       <Garland />
       <div className="scene" aria-hidden="true">
-        {S.map(([Comp, x, y, w, rot, m], i) => (
-          <span key={i} className={`dec${m ? " core" : ""}`} style={{ left: `${x}%`, top: `${y}%`, width: w, "--r": `${rot}deg`, zIndex: i % 3 }}>
+        {S.map(([Comp, side, f, y, w, rot], i) => (
+          <span key={i} className={`dec side-${side}`} style={{ top: `${y}%`, "--w": `${w}px`, "--f": f, "--r": `${rot}deg`, zIndex: i % 3 }}>
             <Comp />
           </span>
         ))}
       </div>
       <div className="center">
+        <DecoRow items={ROW_TOP} />
         <p className="tagline">a secret gift-giving game</p>
         <h1 className="title-big">
           Chris-Mom <span>&amp;</span> Chris-Child
@@ -85,6 +116,7 @@ export default function Landing() {
           <Link className="btn" to="/register">Play</Link>
           <Link className="btn outline" to="/how-to-play">How to Play</Link>
         </div>
+        <DecoRow items={ROW_BOTTOM} below />
       </div>
     </Page>
   );
