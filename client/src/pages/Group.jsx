@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useParams } from "react-router-dom";
 import { api } from "../api.js";
 import Page from "../components/Page.jsx";
+import Modal from "../components/Modal.jsx";
 
 // Chits shuffle on their own when they appear, then settle so one can be tapped.
 function ShuffleChits({ members, onPick, disabled }) {
@@ -60,7 +61,13 @@ export default function Group() {
   const { id } = useParams();
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
-  const [showMembers, setShowMembers] = useState(true);
+  const [showMembers, setShowMembers] = useState(false);
+  const [confirmDraw, setConfirmDraw] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [form, setForm] = useState({ name: "", description: "" });
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const anchorRef = useRef(null);
   const [copied, setCopied] = useState(false);
 
   const [actionError, setActionError] = useState("");
@@ -83,7 +90,7 @@ export default function Group() {
   }, [id]);
 
   async function handleDraw() {
-    if (!window.confirm("Send Chris-Child to everyone? This can't be undone, and members will be locked.")) return;
+    setConfirmDraw(false);
     setDrawing(true);
     setActionError("");
     try {
@@ -109,6 +116,20 @@ export default function Group() {
     }
   }
 
+  useEffect(() => {
+    if (!showMembers) return undefined;
+    const onDown = (e) => { if (anchorRef.current && !anchorRef.current.contains(e.target)) setShowMembers(false); };
+    const onKey = (e) => { if (e.key === "Escape") setShowMembers(false); };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("touchstart", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("touchstart", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [showMembers]);
+
   if (error) {
     return (
       <Page title="Group" back="/dashboard">
@@ -130,6 +151,27 @@ export default function Group() {
     `Join our Chris-Mom & Chris-Child group "${group.name}": ${inviteLink}`
   )}`;
 
+  function openSettings() {
+    setForm({ name: group.name, description: group.description || "" });
+    setSaveError("");
+    setShowSettings(true);
+  }
+
+  async function saveSettings(e) {
+    e.preventDefault();
+    setSaving(true);
+    setSaveError("");
+    try {
+      await api(`/groups/${id}`, { method: "PATCH", body: { name: form.name, description: form.description } });
+      await load();
+      setShowSettings(false);
+    } catch (err) {
+      setSaveError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function copyLink() {
     try {
       await navigator.clipboard.writeText(inviteLink);
@@ -145,21 +187,54 @@ export default function Group() {
       title={group.name}
       back="/dashboard"
       action={
-        <button
-          type="button"
-          className="icon-btn"
-          aria-label="Members"
-          title="Members"
-          aria-pressed={showMembers}
-          onClick={() => setShowMembers((s) => !s)}
-        >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <circle cx="9" cy="8" r="3.5" />
-            <path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6" />
-            <circle cx="17.5" cy="9" r="2.5" />
-            <path d="M17 14.2c2.7.2 4.5 2 4.5 4.8" />
-          </svg>
-        </button>
+        <div className="head-actions">
+          <div className="members-anchor" ref={anchorRef}>
+            <button
+              type="button"
+              className="icon-btn"
+              aria-label="Members"
+              title="Members"
+              aria-haspopup="dialog"
+              aria-expanded={showMembers}
+              onClick={() => setShowMembers((s) => !s)}
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="9" cy="8" r="3.5" />
+                <path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6" />
+                <circle cx="17.5" cy="9" r="2.5" />
+                <path d="M17 14.2c2.7.2 4.5 2 4.5 4.8" />
+              </svg>
+            </button>
+            {showMembers && (
+              <>
+                <div className="sheet-backdrop" aria-hidden="true" />
+                <div className="members-pop" role="dialog" aria-label="Members">
+                  <div className="pop-head">
+                    <h2>Members ({members.length})</h2>
+                    <button type="button" className="x-btn" aria-label="Close members" onClick={() => setShowMembers(false)}>&times;</button>
+                  </div>
+                  <ul className="member-pills">
+                    {members.map((m) => (
+                      <li key={m.id} className={m.joined ? "mpill joined" : "mpill"}>
+                        <span className="bow-icon" aria-hidden="true">&#10086;</span>
+                        <span className="mname">{m.displayName}{m.isMe ? " (you)" : ""}</span>
+                        <span className="mstatus">{m.joined ? "joined" : "not joined"}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </>
+            )}
+          </div>
+          {group.isAdmin && (
+            <button type="button" className="icon-btn" aria-label="Group settings" title="Group settings" onClick={openSettings}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1" />
+              </svg>
+            </button>
+          )}
+        </div>
       }
     >
       <div className="group-layout">
@@ -199,20 +274,6 @@ export default function Group() {
         </div>
 
         <aside className="group-side">
-          {showMembers && (
-            <section className="panel">
-              <h2>Members ({members.length})</h2>
-              <ul className="member-pills">
-                {members.map((m) => (
-                  <li key={m.id} className={m.joined ? "mpill joined" : "mpill"}>
-                    <span className="bow-icon" aria-hidden="true">&#10086;</span>
-                    <span className="mname">{m.displayName}{m.isMe ? " (you)" : ""}</span>
-                    <span className="mstatus">{m.joined ? "joined" : "not joined"}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
           {group.isAdmin && (
             <section className="panel">
               <h2>Invite</h2>
@@ -231,7 +292,7 @@ export default function Group() {
                 <p>Already drawn. Members are locked.</p>
               ) : (
                 <>
-                  <button type="button" onClick={handleDraw} disabled={drawing || members.length < 3}>
+                  <button type="button" onClick={() => setConfirmDraw(true)} disabled={drawing || members.length < 3}>
                     {drawing ? "Sending..." : "Send Chris-Child"}
                   </button>
                   {members.length < 3 && <p className="muted">You need at least 3 members.</p>}
@@ -242,6 +303,37 @@ export default function Group() {
           )}
         </aside>
       </div>
+
+      <Modal
+        open={confirmDraw}
+        title="Send Chris-Child?"
+        confirmLabel="Send"
+        onConfirm={handleDraw}
+        onClose={() => setConfirmDraw(false)}
+      >
+        <p>This sends Chris-Child to everyone. It can&apos;t be undone, and members will be locked.</p>
+      </Modal>
+
+      <Modal
+        open={showSettings}
+        title="Group settings"
+        confirmLabel={saving ? "Saving..." : "Save"}
+        busy={saving}
+        onConfirm={saveSettings}
+        onClose={() => setShowSettings(false)}
+      >
+        <div className="form">
+          <label>
+            Group name
+            <input value={form.name} maxLength={100} required onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          </label>
+          <label>
+            Description
+            <textarea rows={3} maxLength={500} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+          </label>
+          {saveError && <p className="error" role="alert">{saveError}</p>}
+        </div>
+      </Modal>
     </Page>
   );
 }

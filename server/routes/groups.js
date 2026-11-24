@@ -99,6 +99,29 @@ router.post("/groups", async (req, res) => {
   }
 });
 
+// Edit name/description (admin only); same validation as create.
+router.patch("/groups/:id", async (req, res) => {
+  try {
+    const id = toId(req.params.id);
+    if (!id) return res.status(404).json({ error: "Group not found." });
+    const name = String(req.body.name || "").trim();
+    const description = String(req.body.description || "").trim();
+    if (!name || name.length > 100) return res.status(400).json({ error: "Group name is required (max 100 characters)." });
+    if (description.length > 500) return res.status(400).json({ error: "Description is too long (max 500 characters)." });
+    const { rows } = await db.query("SELECT admin_id FROM groups WHERE id = $1", [id]);
+    const member = rows[0]
+      ? (await db.query("SELECT 1 FROM group_members WHERE group_id = $1 AND user_id = $2", [id, req.user.id])).rows[0]
+      : null;
+    if (!rows[0] || !member) return res.status(404).json({ error: "Group not found." });
+    if (rows[0].admin_id !== req.user.id) return res.status(403).json({ error: "Only the admin can edit this group." });
+    await db.query("UPDATE groups SET name = $1, description = $2 WHERE id = $3", [name, description || null, id]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("Update group error:", err);
+    res.status(500).json({ error: "Could not save changes. Please try again." });
+  }
+});
+
 // Group detail: members only
 router.get("/groups/:id", async (req, res) => {
   try {
