@@ -102,15 +102,34 @@ button.outline, .btn.outline { background: transparent; color: var(--green-dark)
 button:disabled { opacity: 0.5; cursor: default; }
 button:focus-visible, .btn:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
 
-/* Back button: small pill */
+/* Back button: kraft gift tag pointing left, with eyelet and red twine loop */
 .back {
-  padding: 5px 14px;
-  margin-bottom: 14px;
-  font-size: 0.8rem;
-  background: var(--paper);
-  color: var(--ink);
-  border: 1.5px solid var(--kraft);
+  position: relative; display: inline-flex; align-items: center;
+  min-height: 44px; min-width: 44px; padding: 0; margin-bottom: 10px;
+  background: transparent; border: 0; border-radius: 6px; color: var(--ink);
+  transform: rotate(-3deg); transform-origin: left center;
+  filter: drop-shadow(0 2px 1px rgba(58, 42, 30, .28));
+  transition: transform .15s ease;
 }
+button.back:hover:not(:disabled) { transform: rotate(0deg) translateX(-3px); }
+.back:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+.back-tag {
+  --pt: 14px; /* depth of the pointed end */
+  position: relative; display: block; height: 34px; padding: 0 16px 0 30px;
+  font: 600 0.85rem/34px var(--font-body); letter-spacing: 0.03em; color: var(--ink);
+  background: var(--ink);
+  clip-path: polygon(var(--pt) 0, 100% 0, 100% 100%, var(--pt) 100%, 0 50%);
+}
+.back-tag::before {
+  content: ""; position: absolute; z-index: -1; inset: 0;
+  background-color: var(--kraft);
+  background-image:
+    radial-gradient(rgba(58, 42, 30, .10) .6px, transparent 1px),
+    linear-gradient(160deg, rgba(255, 255, 255, .28), rgba(0, 0, 0, .06));
+  background-size: 5px 5px, 100% 100%;
+  clip-path: polygon(calc(var(--pt) + 1.5px) 1.5px, calc(100% - 1.5px) 1.5px, calc(100% - 1.5px) calc(100% - 1.5px), calc(var(--pt) + 1.5px) calc(100% - 1.5px), 2px 50%);
+}
+.back-eyelet { position: absolute; left: 0; top: 50%; margin-top: -17px; overflow: visible; pointer-events: none; }
 
 .error { color: var(--red-dark); margin: 0; font-weight: 500; }
 .muted { color: #7a6a5a; font-size: 0.9rem; }
@@ -423,7 +442,6 @@ img, svg, video { max-width: 100%; }
 input, textarea, select { font-size: 16px; max-width: 100%; min-width: 0; }
 input:not([type="checkbox"]), select { min-height: 44px; }
 button, .btn { min-height: 44px; }
-.back { min-height: 44px; padding: 5px 16px; }
 .icon-btn { width: 44px; height: 44px; }
 .x-btn { width: 44px; height: 44px; }
 .toggle { min-height: 44px; align-items: center; }
