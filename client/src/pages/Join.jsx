@@ -12,6 +12,7 @@ export default function Join() {
   const [memberId, setMemberId] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [query, setQuery] = useState("");
   const autoClaimed = useRef(false);
 
   function load() {
@@ -69,6 +70,22 @@ export default function Join() {
     }
   }
 
+  const visible = (data?.names || []).filter((n) => n.displayName.toLowerCase().includes(query.trim().toLowerCase()));
+
+  // Radio-style arrow key navigation; moving focus also selects.
+  function onChipKey(e, i) {
+    const move = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    if (move) {
+      e.preventDefault();
+      const next = visible[(i + move + visible.length) % visible.length];
+      setMemberId(String(next.id));
+      e.currentTarget.parentElement.querySelectorAll('[role="radio"]')[(i + move + visible.length) % visible.length]?.focus();
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      e.currentTarget.click();
+    }
+  }
+
   const back = user ? "/dashboard" : "/";
 
   if (!data) {
@@ -93,15 +110,41 @@ export default function Join() {
         <p>All names in this group have been claimed. Ask the admin if you think this is a mistake.</p>
       ) : (
         <form onSubmit={handleSubmit} className="form card">
-          <label>
-            Who are you?
-            <select value={memberId} onChange={(e) => setMemberId(e.target.value)} required>
-              <option value="">Choose your name...</option>
-              {names.map((n) => (
-                <option key={n.id} value={n.id}>{n.displayName}</option>
-              ))}
-            </select>
-          </label>
+          <div className="name-picker">
+            <span id="who-label" className="name-picker-label">Who are you?</span>
+            {names.length > 12 && (
+              <input
+                type="search"
+                className="name-search"
+                placeholder="Search names..."
+                aria-label="Search names"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+            )}
+            <div className="name-chips" role="radiogroup" aria-labelledby="who-label">
+              {visible.map((n, i) => {
+                const selected = String(memberId) === String(n.id);
+                const tabbable = selected || (!visible.some((v) => String(v.id) === String(memberId)) && i === 0);
+                return (
+                  <button
+                    key={n.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    tabIndex={tabbable ? 0 : -1}
+                    className={`name-chip${selected ? " selected" : ""}${memberId && !selected ? " dim" : ""}`}
+                    onClick={() => setMemberId(selected ? "" : String(n.id))}
+                    onKeyDown={(e) => onChipKey(e, i)}
+                  >
+                    <span className="name-chip-text">{n.displayName}</span>
+                    {selected && <span className="name-chip-check" aria-hidden="true">&#10003;</span>}
+                  </button>
+                );
+              })}
+              {visible.length === 0 && <p className="muted">No names match.</p>}
+            </div>
+          </div>
           {!user && <p className="muted">You'll be asked to log in or register first.</p>}
           {error && <p className="error" role="alert">{error}</p>}
           <button type="submit" disabled={busy}>{busy ? "Please wait..." : "Join group"}</button>
