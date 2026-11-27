@@ -35,8 +35,12 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, []);
 
+  // After the server deleted the account / changed username: sync local state.
+  const clearUser = useCallback(() => setUser(null), []);
+  const updateUser = useCallback((u) => setUser(u), []);
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, clearUser, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

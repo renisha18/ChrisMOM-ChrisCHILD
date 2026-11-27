@@ -492,3 +492,7 @@ fieldset.manage legend { padding: 0 6px; font-weight: 600; font-size: 0.9rem; }
 .manage-actions { display: flex; flex-wrap: wrap; gap: 6px; }
 .leave-btn { width: 100%; margin-top: 12px; }
 .leave-note { margin: 12px 0 0; }
+
+.success { color: var(--green); margin: 0; font-weight: 500; }
+.danger-zone { border-color: var(--red); }
+.danger-zone ul { margin: 0 0 8px; padding-left: 20px; }

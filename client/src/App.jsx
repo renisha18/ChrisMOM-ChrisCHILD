@@ -7,6 +7,7 @@ import Register from "./pages/Register.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import NewGroup from "./pages/NewGroup.jsx";
 import Group from "./pages/Group.jsx";
+import Account from "./pages/Account.jsx";
 import Join from "./pages/Join.jsx";
 import Page from "./components/Page.jsx";
 
@@ -46,6 +47,14 @@ export default function App() {
         element={
           <Protected>
             <Group />
+          </Protected>
+        }
+      />
+      <Route
+        path="/account"
+        element={
+          <Protected>
+            <Account />
           </Protected>
         }
       />

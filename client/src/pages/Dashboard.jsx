@@ -30,6 +30,7 @@ export default function Dashboard() {
       <p>Hello, {user.username}!</p>
       <div className="row left">
         <Link className="btn" to="/groups/new">Create Group</Link>
+        <Link className="btn outline" to="/account">Account</Link>
         <button type="button" className="secondary" onClick={handleLogout}>Log out</button>
       </div>
       {error && <p className="error" role="alert">{error}</p>}
