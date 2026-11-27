@@ -141,6 +141,7 @@ router.get("/groups/:id", async (req, res) => {
       ? (
           await db.query(
             `SELECT id, display_name, (user_id IS NOT NULL) AS joined, (user_id = $2) AS is_me,
+                    (user_id = (SELECT admin_id FROM groups WHERE id = $1)) AS is_admin,
                     revealed_at, assigned_child
              FROM group_members WHERE group_id = $1 ORDER BY id`,
             [id, req.user.id]
@@ -176,6 +177,7 @@ router.get("/groups/:id", async (req, res) => {
         displayName: m.display_name,
         joined: m.joined,
         isMe: m.is_me,
+        isAdmin: !!m.is_admin,
       })),
     });
   } catch (err) {

@@ -4,8 +4,8 @@ import { createPortal } from "react-dom";
 const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 // Themed dialog: backdrop, focus trap, Esc to close. Wrapping in a form lets Enter submit.
-// Props: open, title, onClose, onConfirm (omit for an info/alert modal), confirmLabel, cancelLabel, busy.
-export default function Modal({ open, title, onClose, onConfirm, confirmLabel = "Confirm", cancelLabel = "Cancel", busy = false, children }) {
+// Props: open, title, onClose, onConfirm (omit for an info/alert modal), confirmLabel, cancelLabel, busy, confirmDisabled.
+export default function Modal({ open, title, onClose, onConfirm, confirmLabel = "Confirm", cancelLabel = "Cancel", busy = false, confirmDisabled = false, children }) {
   const card = useRef(null);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
@@ -51,7 +51,7 @@ export default function Modal({ open, title, onClose, onConfirm, confirmLabel = 
         <div className="modal-actions">
           {onConfirm && <button type="button" className="outline" onClick={onClose} disabled={busy}>{cancelLabel}</button>}
           {onConfirm
-            ? <button type="submit" disabled={busy}>{confirmLabel}</button>
+            ? <button type="submit" disabled={busy || confirmDisabled}>{confirmLabel}</button>
             : <button type="button" onClick={onClose}>{confirmLabel === "Confirm" ? "OK" : confirmLabel}</button>}
         </div>
       </form>

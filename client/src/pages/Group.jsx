@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../api.js";
 import Page from "../components/Page.jsx";
 import Modal from "../components/Modal.jsx";
@@ -59,6 +59,7 @@ function ShuffleChits({ members, onPick, disabled }) {
 
 export default function Group() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   const [showMembers, setShowMembers] = useState(false);
@@ -84,6 +85,12 @@ export default function Group() {
   const [dareSending, setDareSending] = useState(false);
   const [dareError, setDareError] = useState("");
   const [toast, setToast] = useState("");
+
+  // Admin management / leave: one themed action modal. mgmt = { type, member? }
+  const [mgmt, setMgmt] = useState(null);
+  const [mgmtText, setMgmtText] = useState("");
+  const [mgmtBusy, setMgmtBusy] = useState(false);
+  const [mgmtError, setMgmtError] = useState("");
 
   function load() {
     return api(`/groups/${id}`)
@@ -145,6 +152,57 @@ export default function Group() {
       await loadDares();
     } catch (err) {
       setDaresError(err.message);
+    }
+  }
+
+  function openMgmt(type, member = null) {
+    setMgmtText(type === "rename" ? member.displayName : "");
+    setMgmtError("");
+    setShowMembers(false);
+    setMgmt({ type, member });
+  }
+
+  async function runMgmt() {
+    const { type, member } = mgmt;
+    const base = `/groups/${id}`;
+    setMgmtBusy(true);
+    setMgmtError("");
+    try {
+      let msg = "";
+      if (type === "add") {
+        await api(`${base}/members`, { method: "POST", body: { name: mgmtText } });
+        msg = "Member added.";
+      } else if (type === "rename") {
+        await api(`${base}/members/${member.id}`, { method: "PATCH", body: { displayName: mgmtText } });
+        msg = "Name updated.";
+      } else if (type === "remove") {
+        await api(`${base}/members/${member.id}`, { method: "DELETE" });
+        msg = "Member removed.";
+      } else if (type === "unclaim") {
+        await api(`${base}/members/${member.id}/unclaim`, { method: "POST" });
+        msg = `${member.displayName} can now rejoin from the invite link.`;
+      } else if (type === "reset") {
+        await api(`${base}/reset`, { method: "POST" });
+        setOpenedName(null);
+        msg = "Draw reset.";
+      } else if (type === "transfer") {
+        await api(`${base}/transfer`, { method: "POST", body: { memberId: member.id } });
+        setShowSettings(false);
+        msg = `${member.displayName} is now the admin.`;
+      } else if (type === "leave") {
+        await api(`${base}/leave`, { method: "POST" });
+        return navigate("/dashboard", { replace: true });
+      } else if (type === "delete") {
+        await api(base, { method: "DELETE", body: { confirmName: mgmtText } });
+        return navigate("/dashboard", { replace: true });
+      }
+      setMgmt(null);
+      await load();
+      setToast(msg);
+    } catch (err) {
+      setMgmtError(err.message);
+    } finally {
+      setMgmtBusy(false);
     }
   }
 
@@ -281,6 +339,11 @@ export default function Group() {
                       </li>
                     ))}
                   </ul>
+                  {!group.isAdmin && (
+                    group.drawn
+                      ? <p className="muted leave-note">To leave this group, ask the admin.</p>
+                      : <button type="button" className="outline leave-btn" onClick={() => openMgmt("leave")}>Leave group</button>
+                  )}
                 </div>
               </>
             )}
@@ -466,7 +529,7 @@ export default function Group() {
       </Modal>
 
       <Modal
-        open={showSettings}
+        open={showSettings && !mgmt}
         title="Group settings"
         confirmLabel={saving ? "Saving..." : "Save"}
         busy={saving}
@@ -487,8 +550,83 @@ export default function Group() {
             <span>Enable dares<small>Members can send secret dares to their Chris-Child.</small></span>
           </label>
           {saveError && <p className="error" role="alert">{saveError}</p>}
+
+          <fieldset className="manage">
+            <legend>Manage members</legend>
+            <ul className="manage-list">
+              {members.map((m) => (
+                <li key={m.id} className="manage-row">
+                  <span className="manage-name">
+                    {m.displayName}
+                    {m.isMe ? " (you)" : ""}
+                    <small>{m.isAdmin ? "admin" : m.joined ? "joined" : "not joined"}</small>
+                  </span>
+                  <span className="manage-actions">
+                    <button type="button" className="outline small" onClick={() => openMgmt("rename", m)}>Rename</button>
+                    {!m.isMe && m.joined && <button type="button" className="outline small" onClick={() => openMgmt("unclaim", m)}>Unclaim</button>}
+                    {!m.isMe && m.joined && <button type="button" className="outline small" onClick={() => openMgmt("transfer", m)}>Make admin</button>}
+                    {!m.isMe && <button type="button" className="outline small danger" onClick={() => openMgmt("remove", m)}>Remove</button>}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            {group.drawn
+              ? <p className="muted">Names are drawn, so members can&apos;t be added or removed. Reset the draw first.</p>
+              : <button type="button" className="outline" onClick={() => openMgmt("add")}>+ Add member</button>}
+          </fieldset>
+
+          <fieldset className="manage danger-zone">
+            <legend>Danger zone</legend>
+            {group.drawn && <button type="button" className="outline danger" onClick={() => openMgmt("reset")}>Reset draw</button>}
+            <button type="button" className="outline danger" onClick={() => openMgmt("delete")}>Delete group</button>
+          </fieldset>
         </div>
       </Modal>
+
+      {(() => {
+        const t = mgmt?.type;
+        const m = mgmt?.member;
+        const cfg = {
+          add: { title: "Add member", label: "Add" },
+          rename: { title: "Rename member", label: "Save" },
+          remove: { title: "Remove member?", label: "Remove" },
+          unclaim: { title: "Unclaim name?", label: "Unclaim" },
+          reset: { title: "Reset the draw?", label: "Reset draw" },
+          transfer: { title: "Make admin?", label: "Transfer" },
+          leave: { title: "Leave group?", label: "Leave" },
+          delete: { title: "Delete group?", label: "Delete forever" },
+        }[t] || { title: "", label: "OK" };
+        return (
+          <Modal
+            open={!!mgmt}
+            title={cfg.title}
+            confirmLabel={mgmtBusy ? "Working..." : cfg.label}
+            busy={mgmtBusy}
+            confirmDisabled={t === "delete" && mgmtText.trim() !== group.name}
+            onConfirm={runMgmt}
+            onClose={() => setMgmt(null)}
+          >
+            {(t === "add" || t === "rename") && (
+              <label>
+                {t === "add" ? "Name" : `New name for ${m.displayName}`}
+                <input value={mgmtText} maxLength={50} required onChange={(e) => setMgmtText(e.target.value)} />
+              </label>
+            )}
+            {t === "remove" && <p>Remove <strong>{m.displayName}</strong> from the group? This can&apos;t be undone.</p>}
+            {t === "unclaim" && <p><strong>{m.displayName}</strong> will be signed out of this name but keep their assignment. Anyone can then claim it from the invite link with a new account.</p>}
+            {t === "reset" && <p>This clears everyone&apos;s Chris-Child, resets every chit and deletes all dares. Members stay, and you can send Chris-Child again. It can&apos;t be undone.</p>}
+            {t === "transfer" && <p>Make <strong>{m.displayName}</strong> the admin? You&apos;ll become a normal member and lose admin controls.</p>}
+            {t === "leave" && <p>Leave <strong>{group.name}</strong>? Your name will be removed from the group.</p>}
+            {t === "delete" && (
+              <>
+                <p>This permanently deletes <strong>{group.name}</strong>, its members and dares. Type the group name to confirm.</p>
+                <input value={mgmtText} aria-label="Group name" onChange={(e) => setMgmtText(e.target.value)} />
+              </>
+            )}
+            {mgmtError && <p className="error" role="alert">{mgmtError}</p>}
+          </Modal>
+        );
+      })()}
     </Page>
   );
 }

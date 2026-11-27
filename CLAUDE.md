@@ -27,6 +27,16 @@ Dares (optional, groups.dares_enabled; toggle on /groups/new and admin settings 
 - GET /api/groups includes new_dares (unseen count) -> Dashboard ticket badge "N new dares".
 - Group page: admin gets "Send a dare" card under Invite; members get a "Send dare" pill beside the description note. Compose modal -> confirm modal -> toast. "Dares for you" (From your Chris-Mom + Done) and "Dares you sent" cards. Disabled before draw.
 
+Admin management (Settings modal; all server-side admin-only, ids always re-checked against the group; routes in server/routes/manage.js):
+- POST /api/groups/:id/members {name}: add (before draw only). PATCH .../members/:mid {displayName}: rename any time, unique case-insensitive.
+- DELETE .../members/:mid: remove (before draw; after draw -> "Reset the draw first"; never yourself).
+- POST .../members/:mid/unclaim: set user_id null, keep assignment/revealed_at, so the name can be claimed again via invite with a new account.
+- POST /api/groups/:id/reset: one transaction clears assigned_child, revealed_at, drawn_at and deletes the group's dares.
+- POST /api/groups/:id/transfer {memberId}: target must be a joined member; old admin becomes a normal member.
+- DELETE /api/groups/:id {confirmName}: must equal group name (UI makes admin type it); cascades; client goes to /dashboard.
+- Members: POST /api/groups/:id/leave (members panel; before draw only; admin must transfer first; after draw UI says "Ask the admin"). Deletes the member row.
+- Each action opens a themed Modal confirm; the settings modal hides while an action modal is open.
+
 Draw: shuffle all members, each gets the next (last -> first), save in one transaction, set drawn_at. Members locked after draw.
 Reveal: pick any chit -> opens to your assigned name, set revealed_at. If revealed_at set, show the opened chit directly.
 

@@ -9,6 +9,7 @@ import authRoutes from "./routes/auth.js";
 import groupRoutes from "./routes/groups.js";
 import joinRoutes from "./routes/join.js";
 import dareRoutes from "./routes/dares.js";
+import manageRoutes from "./routes/manage.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -46,6 +47,7 @@ app.use("/api", authRoutes);
 app.use("/api", groupRoutes);
 app.use("/api", joinRoutes);
 app.use("/api", dareRoutes);
+app.use("/api", manageRoutes);
 app.use("/api", (req, res) => res.status(404).json({ error: "Not found." }));
 
 if (isProd && !process.env.VERCEL) {
